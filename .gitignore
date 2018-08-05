@@ -175,3 +175,6 @@ fabric.properties
 
 .idea/
 01_ex_handl.py
+
+# api for pushbullet
+API_KEY.txt
