@@ -1,6 +1,7 @@
 from sense_hat import SenseHat
 from datetime import datetime
 import requests
+import os
 import json
 
 # Import Table, Column, String, Integer, Float, Boolean from sqlalchemy
@@ -49,11 +50,29 @@ humid = str(round(sense.get_humidity())) + "%"
 print("Humidity reading: " + humid)
 
 # reading temperature from humidity reader
-temp_h = str(round(sense.get_temperature_from_humidity())) + "°C"
+temp_h = round(sense.get_temperature_from_humidity())
 print("Temperature from humidity chip: " + temp_h)
 
+
+# inspired by http://yaab-arduino.blogspot.com/2016/08/accurate-temperature-reading-sensehat.html
+
+def get_cpu_temp():
+    res = os.popen("vcgencmd measure_temp").readline()
+    t = float(res.replace("temp=", "").replace("'C\n", ""))
+    return t
+
+
+def temp():
+    inter_temp = (temp_h + temp_p)
+    t_cpu = get_cpu_temp()
+    t_corr = inter_temp - ((t_cpu - inter_temp) / 1.5)
+    return t_corr
+
+
+print(temp())
+
 # insert into db
-stmt = insert(data).values(dateTime=time, temperature=round(sense.get_temperature()),
+stmt = insert(data).values(dateTime=time, temperature=round(temp()),
                            humidity=round(sense.get_humidity()), pressure=round(sense.get_pressure()))
 
 # connect to db and append insert
@@ -78,7 +97,6 @@ def pushMessage(title, body):
 
 # variable for new line for the push message
 nl = "\n"
-
 
 # calling pushMessage function and sending Time, Temperature, Pressue and Humidity:
 pushMessage("Current reading at " + time,
