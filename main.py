@@ -41,7 +41,7 @@ pressure = str(round(sense.get_pressure())) + "mbar"
 print("Pressure reading: " + pressure)
 
 # reading temperature from pressure reader
-temp_p = str(round(sense.get_temperature_from_pressure())) + "°C"
+temp_p = round(sense.get_temperature_from_pressure())
 print("Temperature from pressure chip: " + temp_p)
 
 # reading humidity reader
@@ -60,7 +60,7 @@ stmt = insert(data).values(dateTime=time, temperature=round(sense.get_temperatur
 connection = engine.connect()
 results = connection.execute(stmt)
 
-filename = 'API_KEY.txt'
+filename = '/home/pi/Desktop/API_KEY.txt'
 file = open(filename, mode='r')  # 'r' is to read
 API_KEY = file.read()
 file.close()
@@ -78,6 +78,7 @@ def pushMessage(title, body):
 
 # variable for new line for the push message
 nl = "\n"
+
 
 # calling pushMessage function and sending Time, Temperature, Pressue and Humidity:
 pushMessage("Current reading at " + time,
