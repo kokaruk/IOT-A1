@@ -43,7 +43,7 @@ print("Pressure reading: " + pressure)
 
 # reading temperature from pressure reader
 temp_p = round(sense.get_temperature_from_pressure())
-print("Temperature from pressure chip: " + temp_p)
+print("Temperature from pressure chip: " + str(temp_p))
 
 # reading humidity reader
 humid = str(round(sense.get_humidity())) + "%"
@@ -51,7 +51,7 @@ print("Humidity reading: " + humid)
 
 # reading temperature from humidity reader
 temp_h = round(sense.get_temperature_from_humidity())
-print("Temperature from humidity chip: " + temp_h)
+print("Temperature from humidity chip: " + str(temp_h))
 
 
 # inspired by http://yaab-arduino.blogspot.com/2016/08/accurate-temperature-reading-sensehat.html
@@ -63,16 +63,16 @@ def get_cpu_temp():
 
 
 def temp():
-    inter_temp = (temp_h + temp_p)
+    inter_temp = (temp_h + temp_p)/2
     t_cpu = get_cpu_temp()
     t_corr = inter_temp - ((t_cpu - inter_temp) / 1.5)
     return t_corr
 
 
-print(temp())
+print(str(temp()))
 
 # insert into db
-stmt = insert(data).values(dateTime=time, temperature=round(temp()),
+stmt = insert(data).values(dateTime=time, temperature=round(sense.get_temperature()),
                            humidity=round(sense.get_humidity()), pressure=round(sense.get_pressure()))
 
 # connect to db and append insert
@@ -98,6 +98,7 @@ def pushMessage(title, body):
 # variable for new line for the push message
 nl = "\n"
 
+
 # calling pushMessage function and sending Time, Temperature, Pressue and Humidity:
 pushMessage("Current reading at " + time,
-            "Temperature: " + temp + nl + "Pressure: " + pressure + nl + "Humidity: " + humid)
+            "Temperature: " + str(temp) + nl + "Pressure: " + pressure + nl + "Humidity: " + humid)
