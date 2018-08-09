@@ -1,3 +1,28 @@
+"""
+* Authors : Patrick Jacob, Dzmitry Kakaruk
+*
+* Version info 1.0.
+*
+* This program is created for Assignment 1 of Programming Internet of Things -  Course Master of IT - RMIT University.
+* This code has parts which are inspired by the course material of  - Programming Internet of Things  - RMIT University.
+*
+* The purpose of the Program is to read the senseHat Data (Temperature, Humidity and Pressure)
+* of a RaspberryPi and send to a Database and PushBullet.
+* For more information please see: https://github.com/kokaruk/IOT-A1
+* This Module returns the reading of sensor data for usage in the program.
+* There are two Parameters by default asString is 'y' for getting the reading as String with Unit
+* or 'n' for only as float
+* Further more sensorType reads by default t for temperature - calculated to account for the heat from the CPU
+*    rt = regular temperature (without any calculations)
+*    p = pressure
+*    h = humidity
+*    pt = temperature from pressure chip
+*    ht = temperature from humidity chip
+*    c = CPU Temperature
+*
+* Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
+"""
+
 from sense_hat import SenseHat
 import os
 
@@ -8,15 +33,7 @@ sense = SenseHat()
 # reading general temperature
 def getReading(tostring='y', sensortype='t'):
     '''
-    Returns the Reading of Senors for usage in the program.
-    There are two Parameters by default asString is 'y' for getting the reading as String with Unit or 'n' for only as float
-    Further more sensorType reads by default t for temperature - calculated to account for the heat from the CPU
-    rt = regular temperature (without any calculations)
-    p = pressure
-    h = humidity
-    pt = temperature from pressure chip
-    ht = temperature from humidity chip
-    c = CPU Temperature
+
     '''
     # reading 'regular' temperature - returning as string with unit
     if tostring == 'n' and sensortype == 'rt':

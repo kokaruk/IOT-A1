@@ -1,62 +1,52 @@
-import requests
+"""
+* Authors : Patrick Jacob, Dzmitry Kakaruk,
+*
+* Version info 1.0.
+*
+* This program is created for Assignment 1 of Programming Internet of Things -  Course Master of IT - RMIT University.
+* This code has parts which are inspired by the course material of  - Programming Internet of Things  - RMIT University.
+*
+* The purpose of the Program is to read the senseHat Data (Temperature, Humidity and Pressure)
+* of a RaspberryPi and send to a Database and PushBullet.
+* For more information please see: https://github.com/kokaruk/IOT-A1
+* This is the main class and serves as starting point of the program.
+*
+* Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
+"""
+
 import senseHatRead as s
+import pushMessage as pM
+import dataBase as db
 from datetime import datetime
 
-# Import Table, Column, String, Integer, Float, Boolean from sqlalchemy
-from sqlalchemy import Table, Column, String, Integer, Float, insert, create_engine, MetaData
-
-# https://www.pythonsheets.com/notes/python-sqlalchemy.html#insert-create-an-insert-statement
-# creation of sqldb and engine
-engine = create_engine('sqlite:///iot.sqlite')
-meta = MetaData(engine)
-
-# Define a new table with dateTime, temperature, humidity, and pressure and place columns: data
-data = Table('data', meta,
-             Column('dateTime', String(255), unique=True),  # DateTime
-             Column('temperature', Float()),
-             Column('humidity', Float()),
-             Column('pressure', Float()),
-             Column('place', String(255))  # location yet to be set
-             )
-
-# Use the metadata to create the table
-meta.create_all(engine)
-
-# set time
 time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-# insert into db
-stmt = insert(data).values(dateTime = time,
-                           temperature = s.getReading('n', 't'),
-                           humidity = s.getReading('n', 'h'),
-                           pressure = s.getReading('n', 'p'),)
 
-# connect to db and append insert
-connection = engine.connect()
-results = connection.execute(stmt)
+def main():
+    # saving the senseHat Readings to a Dict
+    senseHatReadings = {"temp": s.getReading('n', 't'),
+                        "pressure": s.getReading('n', 'p'),
+                        "humidity": s.getReading('n', 'h')}
 
-filename = '/home/pi/Desktop/API_KEY.txt'
-file = open(filename, mode='r')  # 'r' is to read
-API_KEY = file.read()
-file.close()
+    # instanciating the database with the Sensehat Data
+    database = db.dataBase(senseHatReadings["temp"], senseHatReadings["pressure"], senseHatReadings["humidity"])
+    database.insert()
 
+    # sending the pushMessage to PushBullet - need both a
+    if s.getReading('n', 't') >= 18:
 
-# Send a message to all your registered devices.
-def pushMessage(title, body):
-    data = {
-        'type': 'note',
-        'title': title,
-        'body': body
-    }
-    resp = requests.post('https://api.pushbullet.com/api/pushes', data=data, auth=(API_KEY, ''))
+        title = 'It is warm enough for a t-shirt'
+    else:
+        title = 'Please put on a Pullover - its getting colder'
 
+    body = f"Current reading at {time} \n" \
+           f"Temperature: {s.getReading('y', 't')} \n" \
+           f"Pressure: {s.getReading('y', 'p')} \n" \
+           f"Humidity: {s.getReading('y', 'h')}"
 
-# variable for new line for the push message
-nl = "\n"
+    message = pM.pushMessage(title, body)
+    message.pushMessage()
 
 
-# calling pushMessage function and sending Time, Temperature, Pressure and Humidity:
-pushMessage(f"Current reading at {time}",
-            f"Temperature: {s.getReading('y', 't')}{nl}"
-            f"Pressure: {s.getReading('y', 'p')}{nl}"
-            f"Humidity: {s.getReading('n', 't')}")
+# calling main and starting the program
+main()
