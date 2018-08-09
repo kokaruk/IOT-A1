@@ -49,4 +49,4 @@ def main():
 
 
 # calling main and starting the program
-main()
+if __name__ == '__main__': main()
