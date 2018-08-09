@@ -2,10 +2,15 @@ from sense_hat import SenseHat
 from datetime import datetime
 import requests
 import os
-import json
+import senseHatRead
+import sys
+#print sys.getdefaultencoding()
 
 # Import Table, Column, String, Integer, Float, Boolean from sqlalchemy
 from sqlalchemy import Table, Column, String, Integer, Float, insert, create_engine, MetaData
+temp_test = senseHatRead.temp_h
+
+print(str(temp_test) + "test")
 
 # https://www.pythonsheets.com/notes/python-sqlalchemy.html#insert-create-an-insert-statement
 # creation of sqldb and engine
@@ -68,7 +73,9 @@ def temp():
     t_corr = inter_temp - ((t_cpu - inter_temp) / 1.5)
     return t_corr
 
+temp_test = senseHatRead.temp_h
 
+print(str(temp_test) + "test")
 print(str(temp()))
 
 # insert into db
