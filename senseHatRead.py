@@ -1,15 +1,12 @@
 from sense_hat import SenseHat
 import os
 
-# class senseHatRead:
-
 # instanciate senseHat Interface
 sense = SenseHat()
 
 
 # reading general temperature
-
-def getReading (tostring = 'y', sensortype = 't'):
+def getReading(tostring='y', sensortype='t'):
     '''
     Returns the Reading of Senors for usage in the program.
     There are two Parameters by default asString is 'y' for getting the reading as String with Unit or 'n' for only as float
@@ -84,21 +81,3 @@ def getReading (tostring = 'y', sensortype = 't'):
         return cpu_t
     else:
         print('invalid operation')
-
-# reading temperature from pressure reader
-# temp_p = round(sense.get_temperature_from_pressure())
-
-
-# reading temperature from humidity reader
-# temp_h = round(sense.get_temperature_from_humidity())
-
-
-# def get_cpu_temp():
-#    res = os.popen("vcgencmd measure_temp").readline()
-#    t = float(res.replace("temp=", "").replace("'C\n", ""))
-#    return t
-
-# def temp():
-
-
-# trueTemp = temp()
