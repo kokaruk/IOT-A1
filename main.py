@@ -8,7 +8,7 @@
 *
 * The purpose of the Program is to read the senseHat Data (Temperature, Humidity and Pressure)
 * of a RaspberryPi and send to a Database and PushBullet.
-* For more information please see: https://github.com/kokaruk/IOT-A1
+* For more information please see: https://github.com/kokaruk/IOT-A1.
 * This is the main class and serves as starting point of the program.
 *
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
