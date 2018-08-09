@@ -46,6 +46,7 @@ def getReading(tostring='y', sensortype='t'):
         return str(getReading('n', 'h')) + "%"
 
     # calculating corrected Temperature from humidity chip - returning as number (for DB)
+    # inspired by http://yaab-arduino.blogspot.com/2016/08/accurate-temperature-reading-sensehat.html
     elif tostring == 'n' and sensortype == 't':
         inter_temp = (getReading('n', 'ht') + getReading('n', 'pt')) / 2
         t_cpu = getReading('n', 'c')
