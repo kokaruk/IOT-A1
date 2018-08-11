@@ -14,22 +14,22 @@
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
 """
 
-import senseHatRead as s
-import pushMessage as pM
-import database as db
 from datetime import datetime
+import sense_hat_read as s
+import database as db
+import pushMessage as pM
 
 time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
 def main():
     # saving the senseHat Readings to a Dict
-    senseHatReadings = {"temp": s.getReading('n', 't'),
-                        "pressure": s.getReading('n', 'p'),
-                        "humidity": s.getReading('n', 'h')}
+    sense_hat_readings = {"temp": s.getReading('n', 't'),
+                          "pressure": s.getReading('n', 'p'),
+                          "humidity": s.getReading('n', 'h')}
 
-    # instanciating the database with the Sensehat Data
-    database = db.dataBase(senseHatReadings["temp"], senseHatReadings["pressure"], senseHatReadings["humidity"])
+    # instantiating the database with the sense_hat data
+    database = db.dataBase(sense_hat_readings["temp"], sense_hat_readings["pressure"], sense_hat_readings["humidity"])
     database.influx()
 
     # sending the pushMessage to PushBullet - need both a
