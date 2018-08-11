@@ -9,9 +9,9 @@ import sys
 # Import Table, Column, String, Integer, Float, Boolean from sqlalchemy
 from sqlalchemy import Table, Column, String, Integer, Float, insert, create_engine, MetaData
 
-p_test = s.getReading('y', 'p') #pressure
-t_test = s.getReading('y', 't') #calc temperature
-h_test = s.getReading('y', 'h') #humidity
+p_test = s.get_reading('y', 'p') #pressure
+t_test = s.get_reading('y', 't') #calc temperature
+h_test = s.get_reading('y', 'h') #humidity
 
 print(f"temp {t_test}, pressure: {p_test}, humidity: {h_test}")
 

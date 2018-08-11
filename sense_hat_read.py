@@ -26,12 +26,12 @@
 from sense_hat import SenseHat
 import os
 
-# instanciate senseHat Interface
+# instantiate senseHat Interface
 sense = SenseHat()
 
 
 # reading general temperature
-def getReading(tostring='y', sensortype='t'):
+def get_reading(tostring='y', sensortype='t'):
 
     # reading 'regular' temperature - returning as string with unit
     if tostring == 'n' and sensortype == 'rt':
@@ -40,7 +40,7 @@ def getReading(tostring='y', sensortype='t'):
 
     # reading 'regular' temperature - returning as string with unit
     elif tostring == 'y' and sensortype == 'rt':
-        return str(getReading('n', 'rt')) + "°C"
+        return str(get_reading('n', 'rt')) + "°C"
 
     # reading pressure from pressure chip - returning as number (for DB)
     elif tostring == 'n' and sensortype == 'p':
@@ -49,7 +49,7 @@ def getReading(tostring='y', sensortype='t'):
 
     # reading pressure from pressure chip - returning as string with unit
     elif tostring == 'y' and sensortype == 'p':
-        return str(getReading('n', 'p')) + "mbar"
+        return str(get_reading('n', 'p')) + "mbar"
 
     # reading humidity from humidity chip - returning as number (for DB)
     elif tostring == 'n' and sensortype == 'h':
@@ -58,19 +58,19 @@ def getReading(tostring='y', sensortype='t'):
 
     # reading humidity from humidity chip - returning as string with unit
     elif tostring == 'y' and sensortype == 'h':
-        return str(getReading('n', 'h')) + "%"
+        return str(get_reading('n', 'h')) + "%"
 
     # calculating corrected Temperature from humidity chip - returning as number (for DB)
     # inspired by http://yaab-arduino.blogspot.com/2016/08/accurate-temperature-reading-sensehat.html
     elif tostring == 'n' and sensortype == 't':
-        inter_temp = (getReading('n', 'ht') + getReading('n', 'pt')) / 2
-        t_cpu = getReading('n', 'c')
+        inter_temp = (get_reading('n', 'ht') + get_reading('n', 'pt')) / 2
+        t_cpu = get_reading('n', 'c')
         t_corr = round(inter_temp - ((t_cpu - inter_temp) / 1.5), 2)
         return t_corr
 
     # calculating corrected Temperature - returning as string with unit
     elif tostring == 'y' and sensortype == 't':
-        return str(getReading('n', 't')) + "°C"
+        return str(get_reading('n', 't')) + "°C"
 
     # reading temperature from pressure chip - returning as number (for DB)
     elif tostring == 'n' and sensortype == 'pt':
@@ -79,7 +79,7 @@ def getReading(tostring='y', sensortype='t'):
 
     # reading temperature from pressure chip - returning as string with unit
     if tostring == 'y' and sensortype == 'pt':
-        return str(getReading('n', 'pt')) + "°C"
+        return str(get_reading('n', 'pt')) + "°C"
 
     # reading temperature from humidity chip  - returning as number (for DB)
     elif tostring == 'n' and sensortype == 'ht':
@@ -88,7 +88,7 @@ def getReading(tostring='y', sensortype='t'):
 
     # reading temperature from humidity chip - returning as string with unit
     if tostring == 'y' and sensortype == 'ht':
-        return str(getReading('n', 'ht')) + "°C"
+        return str(get_reading('n', 'ht')) + "°C"
 
     # reading cpu temperature from raspberry pi - returning as string with unit
     elif tostring == 'n' and sensortype == 'c':

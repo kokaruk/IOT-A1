@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 * Authors : Patrick Jacob, Dzmitry Kakaruk,
 *
@@ -24,16 +25,16 @@ time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 def main():
     # saving the senseHat Readings to a Dict
-    sense_hat_readings = {"temp": s.getReading('n', 't'),
-                          "pressure": s.getReading('n', 'p'),
-                          "humidity": s.getReading('n', 'h')}
+    sense_hat_readings = {"temp": s.get_reading('n', 't'),
+                          "pressure": s.get_reading('n', 'p'),
+                          "humidity": s.get_reading('n', 'h')}
 
     # instantiating the database with the sense_hat data
     database = db.dataBase(sense_hat_readings["temp"], sense_hat_readings["pressure"], sense_hat_readings["humidity"])
     database.influx()
 
     # sending the pushMessage to PushBullet - need both a
-    if s.getReading('n', 't') >= 18:
+    if s.get_reading('n', 't') >= 18:
 
         title = 'It is warm enough for a t-shirt'
     else:

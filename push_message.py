@@ -19,7 +19,7 @@ import requests
 
 # some code is used from https://simply-python.com/tag/pushbullet/
 
-class pushMessage:
+class PushMessage:
 
     def __init__(self, title, body):
         self.title = title
