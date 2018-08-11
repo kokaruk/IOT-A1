@@ -15,9 +15,12 @@
 """
 
 import datetime
-from influxdb import InfluxDBClient
 import json
 import logging
+
+from influxdb import InfluxDBClient
+from influxdb import exceptions
+
 logging.basicConfig(filename="./logs/system_events.log", level=logging.INFO)
 logging.basicConfig(filename="./logs/system_errors.log", level=logging.ERROR)
 
@@ -32,35 +35,37 @@ class DataBase:
     # following this tutorial as basis: https://www.circuits.dk/datalogger-example-using-sense-hat-influxdb-grafana/
     def influx(self):
         # json parsing from:  https://stackoverflow.com/questions/2835559/parsing-values-from-a-json-file
+        try:
+            with open('influx_connect.json', encoding='utf-8') as connect_file:
+                connect = json.loads(connect_file.read())
 
-        with open('influx_connect.json', encoding='utf-8') as connect_file:
-            connect = json.loads(connect_file.read())
+                # Assigning json attributes for connect to DB to variables
+                host = connect["host"]
+                port = connect["ip"]
+                user = connect["user"]
+                password = connect["password"]
+                db = connect["database"]
 
-            # Assigning json attributes for connect to DB to variables
-            host = connect["host"]
-            port = connect["ip"]
-            user = connect["user"]
-            password = connect["password"]
-            db = connect["database"]
+                # calling the influx client
+                client = InfluxDBClient(host, port, user, password, db)
 
-            # calling the influx client
-            client = InfluxDBClient(host, port, user, password, db)
-
-            # write measures of Sensehat to DB
-            write_data = [
-                {
-                    "measurement": "SenseHatReadings",
-                    "tags": {"user": user},
-                    "time": datetime.datetime.utcnow().isoformat(),
-                    "fields": {
-                        "temperature": self.temperature,
-                        "humidity": self.humidity,
-                        "pressure": self.pressure
+                # write measures of Sensehat to DB
+                write_data = [
+                    {
+                        "measurement": "SenseHatReadings",
+                        "tags": {"user": user},
+                        "time": datetime.datetime.utcnow().isoformat(),
+                        "fields": {
+                            "temperature": self.temperature,
+                            "humidity": self.humidity,
+                            "pressure": self.pressure
+                        }
                     }
-                }
-            ]
+                ]
 
-            result = client.write_points(write_data)
+                result = client.write_points(write_data)
 
-            # print result of writing to DB
-            logging.info(f"SenserHat to influxDatabase: {result}")
+                # print result of writing to DB
+                logging.info(f"SenserHat to influxDatabase: {result}")
+        except exceptions.InfluxDBClientError as err:
+            logging.error(err)
