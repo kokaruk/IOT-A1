@@ -20,6 +20,7 @@ import requests
 # some code is used from https://simply-python.com/tag/pushbullet/
 
 class PushMessage:
+    FILE_NAME = './API_KEY.txt'
 
     def __init__(self, title, body):
         self.title = title
@@ -33,10 +34,9 @@ class PushMessage:
             'body': self.body
         }
         # read out of the local API Key
-        filename = './API_KEY.txt'
-        file = open(filename, mode='r')  # 'r' is to read
-        API_KEY = file.read()
+        file = open(self.FILE_NAME, mode='r')  # 'r' is to read
+        api_key = file.read()
         file.close()
 
         # sending of the message to pushbullet
-        requests.post('https://api.pushbullet.com/api/pushes', data=data, auth=(API_KEY, ''))
+        requests.post('https://api.pushbullet.com/api/pushes', data=data, auth=(api_key, ''))

@@ -17,9 +17,12 @@
 import datetime
 from influxdb import InfluxDBClient
 import json
+import logging
+logging.basicConfig(filename="./logs/system_events.log", level=logging.INFO)
+logging.basicConfig(filename="./logs/system_errors.log", level=logging.ERROR)
 
 
-class dataBase:
+class DataBase:
 
     def __init__(self, temperature, humidity, pressure):
         self.temperature = temperature
@@ -60,4 +63,4 @@ class dataBase:
             result = client.write_points(write_data)
 
             # print result of writing to DB
-            print(f"SenserHat to influxDatabase: {result}")
+            logging.info(f"SenserHat to influxDatabase: {result}")

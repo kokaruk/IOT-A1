@@ -180,4 +180,4 @@ fabric.properties
 API_KEY.txt
 influx_connect.json
 main_test.py
-
+logs/
