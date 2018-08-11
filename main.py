@@ -14,6 +14,12 @@
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
 """
 
+<<<<<<< Updated upstream
+=======
+import sense_hat_read as s
+import pushMessage as pM
+import database as db
+>>>>>>> Stashed changes
 from datetime import datetime
 import sense_hat_read as s
 import database as db

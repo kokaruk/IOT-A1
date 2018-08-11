@@ -30,7 +30,7 @@ class dataBase:
     def influx(self):
         # json parsing from:  https://stackoverflow.com/questions/2835559/parsing-values-from-a-json-file
 
-        with open('influxConnect.json', encoding='utf-8') as connect_file:
+        with open('influx_connect.json', encoding='utf-8') as connect_file:
             connect = json.loads(connect_file.read())
 
             # Assigning json attributes for connect to DB to variables

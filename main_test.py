@@ -2,7 +2,7 @@
 from datetime import datetime
 import requests
 
-import senseHatRead as s
+import sense_hat_read as s
 import sys
 #print sys.getdefaultencoding()
 

@@ -32,9 +32,7 @@ sense = SenseHat()
 
 # reading general temperature
 def getReading(tostring='y', sensortype='t'):
-    '''
 
-    '''
     # reading 'regular' temperature - returning as string with unit
     if tostring == 'n' and sensortype == 'rt':
         temp = round(sense.get_temperature(), 2)

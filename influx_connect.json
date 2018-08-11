@@ -1,0 +1,7 @@
+{
+  "host": "localhost",
+  "ip": "8086",
+  "user": "pi",
+  "password": "brucelee",
+  "database": "IoT"
+}
