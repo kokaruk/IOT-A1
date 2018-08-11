@@ -16,7 +16,9 @@
 
 # Import Table, Column, String, Integer, Float, Boolean from sqlalchemy
 from sqlalchemy import Table, Column, String, Integer, Float, insert, create_engine, MetaData
-from datetime import datetime
+import datetime
+from influxdb import InfluxDBClient
+import json
 
 
 class dataBase:
@@ -44,7 +46,7 @@ class dataBase:
         meta.create_all(engine)
 
         # set time
-        time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        time = datetime.datetime.utcnow().isoformat()
 
         # insert into db
         stmt = insert(data).values(dateTime=time,
@@ -55,3 +57,39 @@ class dataBase:
         # connect to db and append insert
         connection = engine.connect()
         connection.execute(stmt)
+
+    # following this tutorial as basis: https://www.circuits.dk/datalogger-example-using-sense-hat-influxdb-grafana/
+    def influx(self):
+        # json parsing from:  https://stackoverflow.com/questions/2835559/parsing-values-from-a-json-file
+
+        with open('influxConnect.json', encoding='utf-8') as connect_file:
+            connect = json.loads(connect_file.read())
+
+        # Assigning json attributes for connect to DB to variables
+        host = connect["host"]
+        port = connect["ip"]
+        user = connect["user"]
+        password = connect["password"]
+        db = connect["database"]
+
+        # calling the influx client
+        client = InfluxDBClient(host, port, user, password, db)
+
+        # write measures of Sensehat to DB
+        write_data = [
+            {
+                "measurement": "SenseHatReadings",
+                "tags": {"user": user},
+                "time": datetime.datetime.utcnow().isoformat(),
+                "fields": {
+                    "temperature": self.temperature,
+                    "humidity": self.humidity,
+                    "pressure": self.pressure
+                }
+            }
+        ]
+
+        result = client.write_points(write_data)
+
+        # print result of writing to DB
+        print(f"SenserHat to influxDatabase: {result}")

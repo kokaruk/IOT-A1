@@ -31,6 +31,7 @@ def main():
     # instanciating the database with the Sensehat Data
     database = db.dataBase(senseHatReadings["temp"], senseHatReadings["pressure"], senseHatReadings["humidity"])
     database.insert()
+    database.influx()
 
     # sending the pushMessage to PushBullet - need both a
     if s.getReading('n', 't') >= 18:
