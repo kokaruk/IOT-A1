@@ -17,7 +17,7 @@
 from datetime import datetime
 import sense_hat_read as s
 import database as db
-import pushMessage as pM
+import push_message as pm
 
 time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -44,8 +44,8 @@ def main():
            f"Pressure: {s.getReading('y', 'p')} \n" \
            f"Humidity: {s.getReading('y', 'h')}"
 
-    message = pM.pushMessage(title, body)
-    message.pushMessage()
+    message = pm.pushMessage(title, body)
+    message.push_message()
 
 
 # calling main and starting the program

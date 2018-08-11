@@ -26,7 +26,7 @@ class pushMessage:
         self.body = body
 
     # Send a message to all your registered devices.
-    def pushMessage(self):
+    def push_message(self):
         data = {
             'type': 'note',
             'title': self.title,
