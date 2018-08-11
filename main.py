@@ -28,7 +28,7 @@ def main():
                         "pressure": s.getReading('n', 'p'),
                         "humidity": s.getReading('n', 'h')}
 
-    # instanciating the database with the Sensehat Data
+    # instantiating the database with the Sensehat Data
     database = db.dataBase(senseHatReadings["temp"], senseHatReadings["pressure"], senseHatReadings["humidity"])
     database.insert()
 
@@ -49,4 +49,5 @@ def main():
 
 
 # calling main and starting the program
-main()
+if __name__ == '__main__':
+    main()
