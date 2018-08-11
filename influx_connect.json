@@ -2,6 +2,6 @@
   "host": "localhost",
   "ip": "8086",
   "user": "pi",
-  "password": "brucelee",
-  "database": "IoT"
+  "password": "Mjolnir2pi",
+  "database": "IoT_A1"
 }

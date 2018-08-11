@@ -178,5 +178,6 @@ fabric.properties
 
 # api for pushbullet
 API_KEY.txt
-influxConnect.json
+influx_connect.json
+main_test.py
 
