@@ -16,7 +16,7 @@
 
 import senseHatRead as s
 import pushMessage as pM
-import dataBase as db
+import database as db
 from datetime import datetime
 
 time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -30,7 +30,6 @@ def main():
 
     # instanciating the database with the Sensehat Data
     database = db.dataBase(senseHatReadings["temp"], senseHatReadings["pressure"], senseHatReadings["humidity"])
-    database.insert()
     database.influx()
 
     # sending the pushMessage to PushBullet - need both a
