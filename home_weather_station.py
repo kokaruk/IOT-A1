@@ -43,6 +43,8 @@ def main():
     #  TODO: check if temperature change notification required
     #
 
+    # TODO refactor: message construction should me in message module, not in main
+
     # sending the pushMessage to PushBullet
     title = 'It is warm enough for a t-shirt' \
         if s.get_reading('n', 't') >= temperature_threshold \
