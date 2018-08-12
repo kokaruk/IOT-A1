@@ -20,7 +20,7 @@ import requests
 # some code is used from https://simply-python.com/tag/pushbullet/
 
 class PushMessage:
-    FILE_NAME = './API_KEY.txt'
+    FILE_NAME = './conf/API_KEY.txt'
 
     def __init__(self, title, body):
         self.title = title
