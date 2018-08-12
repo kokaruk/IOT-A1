@@ -39,9 +39,8 @@ def main():
                                sense_hat_readings["pressure"],
                                sense_hat_readings["humidity"])
 
-    # check if temperature change notification required
     #
-    #  CODE HERE
+    #  TODO: check if temperature change notification required
     #
 
     # sending the pushMessage to PushBullet
