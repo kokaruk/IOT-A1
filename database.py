@@ -27,6 +27,8 @@ logging.basicConfig(filename="./logs/system_errors.log", level=logging.ERROR)
 
 class DataBase:
 
+    CONF_FILE = './conf/influx_connect.json'
+
     def __init__(self, temperature, humidity, pressure):
         self.temperature = temperature
         self.humidity = humidity
@@ -36,8 +38,8 @@ class DataBase:
     def influx(self):
         # json parsing from:  https://stackoverflow.com/questions/2835559/parsing-values-from-a-json-file
         try:
-            with open('influx_connect.json', encoding='utf-8') as connect_file:
-                connect = json.loads(connect_file.read())
+            with open(self.CONF_FILE, "r") as connect_file:
+                connect = json.load(connect_file)
 
                 # Assigning json attributes for connect to DB to variables
                 host = connect["host"]
