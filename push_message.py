@@ -13,30 +13,45 @@
 *
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
 """
+import logging
 
 import requests
+
+logging.basicConfig(filename="./logs/system_errors.log",
+                    format='%(asctime)s %(message)s',
+                    level=logging.CRITICAL)
 
 
 # some code is used from https://simply-python.com/tag/pushbullet/
 
 class PushMessage:
-    FILE_NAME = './API_KEY.txt'
+    FILE_NAME = './conf/API_KEY.txt'
 
-    def __init__(self, title, body):
-        self.title = title
-        self.body = body
+    def read_api_key(self):
+        """
+        read out of the local API Key
+        :return: push-bullet api key
+        """
+        try:
+            with open(self.FILE_NAME, "r") as api_key:
+                return api_key.read()
+        except (FileNotFoundError, IOError):
+            logging.critical(f"{self.FILE_NAME} not found")
 
-    # Send a message to all your registered devices.
-    def push_message(self):
+    def push_message(self, title, body):
+        """
+        # Send a message to all your registered devices.
+        :param title: title of the pushed message
+        :param body: body body of the message
+        """
         data = {
             'type': 'note',
-            'title': self.title,
-            'body': self.body
+            'title': title,
+            'body': body
         }
-        # read out of the local API Key
-        file = open(self.FILE_NAME, mode='r')  # 'r' is to read
-        api_key = file.read()
-        file.close()
-
-        # sending of the message to pushbullet
-        requests.post('https://api.pushbullet.com/api/pushes', data=data, auth=(api_key, ''))
+        api_key = self.read_api_key()
+        try:
+            # sending of the message to push-bullet
+            requests.post('https://api.pushbullet.com/api/pushes', data=data, auth=(api_key, ''))
+        except requests.exceptions.RequestException as err:
+            logging.critical(f" error pushing message {err}")
