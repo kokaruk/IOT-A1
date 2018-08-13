@@ -182,5 +182,4 @@ conf/API_KEY.txt
 main_test.py
 #db connection strings
 conf/influx_connect.json
-conf/
 logs/

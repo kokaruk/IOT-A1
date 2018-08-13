@@ -23,77 +23,59 @@
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
 """
 
-from sense_hat import SenseHat
 import os
+
+from sense_hat import SenseHat
 
 # instantiate senseHat Interface
 sense = SenseHat()
 
 
-# reading general temperature
-def get_reading(tostring='y', sensortype='t'):
+def _get_sense_temperature():
+    return sense.get_temperature()
 
-    # reading 'regular' temperature - returning as string with unit
-    if tostring == 'n' and sensortype == 'rt':
-        temp = round(sense.get_temperature(), 2)
-        return temp
 
-    # reading 'regular' temperature - returning as string with unit
-    elif tostring == 'y' and sensortype == 'rt':
-        return str(get_reading('n', 'rt')) + "°C"
+def _get_sense_temperature_from_humidity():
+    return sense.get_temperature_from_humidity()
 
-    # reading pressure from pressure chip - returning as number (for DB)
-    elif tostring == 'n' and sensortype == 'p':
-        pressure = round(sense.get_pressure(), 2)
-        return pressure
 
-    # reading pressure from pressure chip - returning as string with unit
-    elif tostring == 'y' and sensortype == 'p':
-        return str(get_reading('n', 'p')) + "mbar"
+def _get_sense_temperature_from_pressure():
+    return sense.get_temperature_from_pressure()
 
-    # reading humidity from humidity chip - returning as number (for DB)
-    elif tostring == 'n' and sensortype == 'h':
-        humid = round(sense.get_humidity(), 2)
-        return humid
 
-    # reading humidity from humidity chip - returning as string with unit
-    elif tostring == 'y' and sensortype == 'h':
-        return str(get_reading('n', 'h')) + "%"
+def _get_sense_cpu_temperature():
+    res = os.popen("vcgencmd measure_temp").readline()
+    res = float(res.replace("temp=", "").replace("'C\n", ""))
+    return res
 
+
+def get_sense_pressure():
+    return sense.get_pressure()
+
+
+def get_sense_humid():
+    return sense.get_humidity()
+
+
+def get_correct_temperature():
+    """
     # calculating corrected Temperature from humidity chip - returning as number (for DB)
     # inspired by http://yaab-arduino.blogspot.com/2016/08/accurate-temperature-reading-sensehat.html
-    elif tostring == 'n' and sensortype == 't':
-        inter_temp = (get_reading('n', 'ht') + get_reading('n', 'pt')) / 2
-        t_cpu = get_reading('n', 'c')
-        t_corr = round(inter_temp - ((t_cpu - inter_temp) / 1.5), 2)
-        return t_corr
+    :return: correct temp
+    """
+    inter_temp = (_get_sense_temperature_from_humidity() + _get_sense_temperature_from_pressure()) / 2
+    t_cpu = _get_sense_cpu_temperature()
+    factor = 1.5  # this is a specified temp factor in sample code
+    t_corr = inter_temp - ((t_cpu - inter_temp) / factor)
 
-    # calculating corrected Temperature - returning as string with unit
-    elif tostring == 'y' and sensortype == 't':
-        return str(get_reading('n', 't')) + "°C"
+    return t_corr
 
-    # reading temperature from pressure chip - returning as number (for DB)
-    elif tostring == 'n' and sensortype == 'pt':
-        temp_p = round(sense.get_temperature_from_pressure(), 2)
-        return temp_p
 
-    # reading temperature from pressure chip - returning as string with unit
-    if tostring == 'y' and sensortype == 'pt':
-        return str(get_reading('n', 'pt')) + "°C"
+def get_reading_as_string(**kwargs):
+    units_strings = {
+        'temperature': '˚C',
+        'humidity': '%',
+        'pressure': 'mbar'
+    }
+    return f"{round(kwargs['value'], 2)}{units_strings[kwargs['unit']]}"
 
-    # reading temperature from humidity chip  - returning as number (for DB)
-    elif tostring == 'n' and sensortype == 'ht':
-        temp_h = round(sense.get_temperature_from_humidity(), 2)
-        return temp_h
-
-    # reading temperature from humidity chip - returning as string with unit
-    if tostring == 'y' and sensortype == 'ht':
-        return str(get_reading('n', 'ht')) + "°C"
-
-    # reading cpu temperature from raspberry pi - returning as string with unit
-    elif tostring == 'n' and sensortype == 'c':
-        res = os.popen("vcgencmd measure_temp").readline()
-        cpu_t = float(res.replace("temp=", "").replace("'C\n", ""))
-        return cpu_t
-    else:
-        print('invalid operation')

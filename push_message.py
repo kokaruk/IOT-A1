@@ -13,19 +13,27 @@
 *
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
 """
+import configparser
 import logging
 
 import requests
 
-logging.basicConfig(filename="./logs/system_errors.log",
+import sense_hat_read as sh
+
+logging.basicConfig(filename="/home/pi/a1/weather_system_errors.log",
                     format='%(asctime)s %(message)s',
                     level=logging.CRITICAL)
+
+config = configparser.ConfigParser()
+config.read('/home/pi/a1/conf/config.ini')
+# send notification when passing this temp threshold
+temperature_threshold = int(config['Globals']['temperature_threshold'])
 
 
 # some code is used from https://simply-python.com/tag/pushbullet/
 
 class PushMessage:
-    FILE_NAME = './conf/API_KEY.txt'
+    FILE_NAME = '/home/pi/a1/conf/API_KEY.txt'
 
     def read_api_key(self):
         """
@@ -38,12 +46,25 @@ class PushMessage:
         except (FileNotFoundError, IOError):
             logging.critical(f"{self.FILE_NAME} not found")
 
-    def push_message(self, title, body):
+    def push_message(self, **kwargs):
         """
         # Send a message to all your registered devices.
-        :param title: title of the pushed message
-        :param body: body body of the message
+        :param kwargs dictionary
         """
+
+        title = 'It is warm enough for a t-shirt' \
+            if kwargs['temperature'] >= temperature_threshold \
+            else 'Please put on a Pullover - its getting colder'
+
+        temperature = sh.get_reading_as_string(value=kwargs['temperature'], unit='temperature')
+        pressure = sh.get_reading_as_string(value=kwargs['pressure'], unit='pressure')
+        humidity = sh.get_reading_as_string(value=kwargs['humidity'], unit='humidity')
+
+        body = f"Current reading at {kwargs['time']}\n" \
+               f"Temperature: {temperature}\n" \
+               f"Pressure: {pressure}\n" \
+               f"Humidity: {humidity}"
+
         data = {
             'type': 'note',
             'title': title,
@@ -52,6 +73,7 @@ class PushMessage:
         api_key = self.read_api_key()
         try:
             # sending of the message to push-bullet
-            requests.post('https://api.pushbullet.com/api/pushes', data=data, auth=(api_key, ''))
+            requests.post('https://api.pushbullet.com/api/pushes',
+                          data=data, auth=(api_key, ''))
         except requests.exceptions.RequestException as err:
             logging.critical(f" error pushing message {err}")
