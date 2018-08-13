@@ -17,11 +17,11 @@
 
 from datetime import datetime
 import sense_hat_read as s
-import database as db
+import influx_db_proxy as db
 import push_message as pm
 
 time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
+temperature_threshold = 25  # send notification when passing this temp threshold
 
 def main():
     # saving the senseHat Readings to a Dict
@@ -29,24 +29,34 @@ def main():
                           "pressure": s.get_reading('n', 'p'),
                           "humidity": s.get_reading('n', 'h')}
 
-    # instantiating the database with the sense_hat data
-    database = db.DataBase(sense_hat_readings["temp"], sense_hat_readings["pressure"], sense_hat_readings["humidity"])
-    database.influx()
+    # instantiating the database accessor
+    database = db.InfluxDBProxy()
 
-    # sending the pushMessage to PushBullet - need both a
-    if s.get_reading('n', 't') >= 18:
+    # read last entry from db
+    last_temp = database.get_last_logged()
 
-        title = 'It is warm enough for a t-shirt'
-    else:
-        title = 'Please put on a Pullover - its getting colder'
+    database.write_sh_readings(sense_hat_readings["temp"],
+                               sense_hat_readings["pressure"],
+                               sense_hat_readings["humidity"])
+
+    #
+    #  TODO: check if temperature change notification required
+    #
+
+    # TODO refactor: message construction should me in message module, not in main
+
+    # sending the pushMessage to PushBullet
+    title = 'It is warm enough for a t-shirt' \
+        if s.get_reading('n', 't') >= temperature_threshold \
+        else 'Please put on a Pullover - its getting colder'
 
     body = f"Current reading at {time} \n" \
            f"Temperature: {s.get_reading('y', 't')} \n" \
            f"Pressure: {s.get_reading('y', 'p')} \n" \
            f"Humidity: {s.get_reading('y', 'h')}"
 
-    message = pm.PushMessage(title, body)
-    message.push_message()
+    message = pm.PushMessage()
+    message.push_message(title, body)
 
 
 # calling main and starting the program
