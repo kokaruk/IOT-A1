@@ -22,9 +22,10 @@ from datetime import datetime
 import influx_db_proxy as db
 import push_message as pm
 import sense_hat_read as sh
+import bluetooth as bt
 
 config = configparser.ConfigParser()
-config.read('/home/pi/a1/conf/config.ini')
+config.read('./conf/config.ini')
 
 # Globals
 temperature_threshold = int(config['Globals']['temperature_threshold'])
@@ -43,6 +44,7 @@ def main():
         populate_readings()
         populate_db()
         send_notification()
+        check_for_bluetooth_devices()
         time.sleep(FREQUENCY)
 
 
@@ -80,6 +82,11 @@ def send_notification():
                              temperature=sense_hat_readings["temperature"],
                              humidity=sense_hat_readings["humidity"],
                              pressure=sense_hat_readings["pressure"])
+
+
+def check_for_bluetooth_devices():
+    bluetooth_instance = bt.BluetoothConnect
+    bluetooth_instance.search_and_display_message(sense_hat_readings["temperature"])
 
 
 # calling main and starting the program

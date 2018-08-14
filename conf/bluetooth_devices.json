@@ -1,0 +1,12 @@
+{
+  "devices": [
+    {
+      "owner_name": "Patrick",
+      "device_name": "Patrick Iphone"
+    },
+    {
+      "owner_name": "Dimmi",
+      "device_name": "Dimmi Device"
+    }
+  ]
+}

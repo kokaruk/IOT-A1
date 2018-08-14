@@ -20,12 +20,12 @@ import requests
 
 import sense_hat_read as sh
 
-logging.basicConfig(filename="/home/pi/a1/weather_system_errors.log",
+logging.basicConfig(filename="./logs/weather_system_errors.log",
                     format='%(asctime)s %(message)s',
                     level=logging.CRITICAL)
 
 config = configparser.ConfigParser()
-config.read('/home/pi/a1/conf/config.ini')
+config.read('./conf/config.ini')
 # send notification when passing this temp threshold
 temperature_threshold = int(config['Globals']['temperature_threshold'])
 
@@ -33,7 +33,7 @@ temperature_threshold = int(config['Globals']['temperature_threshold'])
 # some code is used from https://simply-python.com/tag/pushbullet/
 
 class PushMessage:
-    FILE_NAME = '/home/pi/a1/conf/API_KEY.txt'
+    FILE_NAME = './conf/API_KEY.txt'
 
     def read_api_key(self):
         """

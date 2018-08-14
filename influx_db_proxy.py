@@ -21,16 +21,16 @@ import logging
 from influxdb import InfluxDBClient
 from influxdb import exceptions
 
-logging.basicConfig(filename="/home/pi/a1/weather_system_events.log",
+logging.basicConfig(filename="./logs/weather_system_events.log",
                     format='%(asctime)s %(message)s',
                     level=logging.ERROR)
-logging.basicConfig(filename="/home/pi/a1/weather_system_errors.log",
+logging.basicConfig(filename="./logs/weather_system_errors.log",
                     format='%(asctime)s %(message)s',
                     level=logging.CRITICAL)
 
 
 class InfluxDBProxy:
-    CONF_FILE = '/home/pi/a1/conf/influx_connect.json'
+    CONF_FILE = './conf/influx_connect.json'
 
     def __init__(self):
         connect = self.read_config_json()
