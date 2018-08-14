@@ -31,7 +31,6 @@ logging.basicConfig(filename=log_path,
 
 
 class InfluxDBProxy:
-
     CONF_FILE = os.path.join(dir_path, 'conf/influx_connect.json')
 
     def __init__(self):
@@ -87,7 +86,16 @@ class InfluxDBProxy:
         :return: read latest logged temperature data in db
         """
         try:
-            last_temp = self._client.query('SELECT LAST("temperature") FROM SenseHatReadings')
+            # todo sql of last mean
+
+            # SELECT mean("temperature")
+            # FROM "SenseHatReadings"
+            # WHERE ("user" = 'pi')
+            # AND $timeFilter
+            # GROUP BY time(15m) fill(0)
+
+            # last_temp = self._client.query('SELECT LAST("temperature") FROM SenseHatReadings')
+            last_temp = self._client.query('SELECT LAST(mean("temperature")) FROM "SenseHatReadings" GROUP BY time(15m)')
             last_temp = list(last_temp.get_points())[0]
             return last_temp["last"]
         except exceptions.InfluxDBClientError as err:

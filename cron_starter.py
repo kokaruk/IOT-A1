@@ -21,7 +21,6 @@ if reset_cron:
     cron.remove_all()
 
 # add new cron job
-
 dir_path = os.path.dirname(os.path.abspath(__file__))
 main_path = os.path.join(dir_path, 'home_weather_station.py')
 
