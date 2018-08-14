@@ -16,21 +16,24 @@
 *
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
 """
+import os
 
 import bluetooth
 import json
 import logging
 import time
 from sense_hat import SenseHat
-import sense_hat_read as sh
-
-logging.basicConfig(filename="./logs/weather_system_errors.log",
-                    format='%(asctime)s %(message)s',
-                    level=logging.CRITICAL)
+import home_weather_station as ws
+dir_path = os.path.dirname(os.path.abspath(__file__))
+log_path = os.path.join(dir_path, 'logs/weather_system_errors.log')
+logging.basicConfig(filename=log_path,
+                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                    datefmt='%d-%m %H:%M:%S',
+                    level=logging.INFO)
 
 
 class BluetoothConnect:
-    FILE_NAME = './conf/bluetooth_devices.json'
+    FILE_NAME = os.path.join(dir_path, 'conf/bluetooth_devices.json')
 
     # Main function
     def parse_known_devices(self):
@@ -60,7 +63,7 @@ class BluetoothConnect:
                         break
                 if device_address is not None:
                     print("Hi {}! Your phone ({}) has the MAC address: {}".format(name, device, device_address))
-                    temperature = sh.get_reading_as_string(value=kwargs['temperature'], unit='temperature')
+                    temperature = ws.SenseHatReadings.get_reading_as_string(value=kwargs['temperature'], unit='temperature')
 
                     sense = SenseHat()
                     sense.show_message(f"Hi {name} Current Temp is {temperature}", scroll_speed=0.03)

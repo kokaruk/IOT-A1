@@ -17,20 +17,22 @@
 import datetime
 import json
 import logging
+import os
 
 from influxdb import InfluxDBClient
 from influxdb import exceptions
 
-logging.basicConfig(filename="./logs/weather_system_events.log",
-                    format='%(asctime)s %(message)s',
-                    level=logging.ERROR)
-logging.basicConfig(filename="./logs/weather_system_errors.log",
-                    format='%(asctime)s %(message)s',
-                    level=logging.CRITICAL)
+dir_path = os.path.dirname(os.path.abspath(__file__))
+log_path = os.path.join(dir_path, 'logs/weather_system_errors.log')
+logging.basicConfig(filename=log_path,
+                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                    datefmt='%d-%m %H:%M:%S',
+                    level=logging.INFO)
 
 
 class InfluxDBProxy:
-    CONF_FILE = './conf/influx_connect.json'
+
+    CONF_FILE = os.path.join(dir_path, 'conf/influx_connect.json')
 
     def __init__(self):
         connect = self.read_config_json()

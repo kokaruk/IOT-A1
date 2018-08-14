@@ -1,13 +1,31 @@
 #!/usr/bin/env python3
-#  * * * * * /home/pi/developer/python/iot/saytime.py
+import os
+
 from crontab import CronTab
+
+
+def reset() -> int:
+    prompt = "reset all cron jobs? "
+    while True:
+        try:
+            return {"true": True, "false": False}[input(prompt).lower()]
+        except KeyError:
+            print("Invalid input please enter True or False!")
+
 
 # init cron
 cron = CronTab(user='pi')
-cron.remove_all()
+reset_cron: bool = reset()
+
+if reset_cron:
+    cron.remove_all()
 
 # add new cron job
-job = cron.new(command='/home/pi/a1/home_weather_station.py')
+
+dir_path = os.path.dirname(os.path.abspath(__file__))
+main_path = os.path.join(dir_path, 'home_weather_station.py')
+
+job = cron.new(command=main_path)
 
 # job settings
 job.minute.every(1)

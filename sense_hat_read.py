@@ -67,15 +67,4 @@ def get_correct_temperature():
     t_cpu = _get_sense_cpu_temperature()
     factor = 1.5  # this is a specified temp factor in sample code
     t_corr = inter_temp - ((t_cpu - inter_temp) / factor)
-
     return t_corr
-
-
-def get_reading_as_string(**kwargs):
-    units_strings = {
-        'temperature': '˚C',
-        'humidity': '%',
-        'pressure': 'mbar'
-    }
-    return f"{round(kwargs['value'], 2)}{units_strings[kwargs['unit']]}"
-
