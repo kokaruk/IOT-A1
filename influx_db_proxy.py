@@ -95,6 +95,8 @@ class InfluxDBProxy:
             # GROUP BY time(15m) fill(0)
 
             # last_temp = self._client.query('SELECT LAST("temperature") FROM SenseHatReadings')
+            # untested solution :
+            # last_temp = self._client.query('SELECT MEAN(temperature) FROM SenseHatReadings where time >= (last(time) - 15m) and time <= now()')
             last_temp = self._client.query('SELECT LAST(mean("temperature")) FROM "SenseHatReadings" GROUP BY time(15m)')
             last_temp = list(last_temp.get_points())[0]
             return last_temp["last"]
