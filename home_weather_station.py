@@ -70,7 +70,7 @@ current_temperature = 0
 current_time: str
 RUNS_PER_MINUTE = 20
 FREQUENCY = 3
-sense_hat_readings: type(SenseHatReadings)
+sense_hat_readings: SenseHatReadings
 
 
 def main():
@@ -105,9 +105,7 @@ def populate_db():
 
     global current_temperature
     current_temperature = sense_hat_readings.temperature
-    database_accessor.write_sh_readings(temperature=sense_hat_readings.temperature,
-                                        humidity=sense_hat_readings.humidity,
-                                        pressure=sense_hat_readings.pressure)
+    database_accessor.write_sh_readings(sense_hat_readings)
 
 
 def send_notification():

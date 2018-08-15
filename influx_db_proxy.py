@@ -22,6 +22,8 @@ import os
 from influxdb import InfluxDBClient
 from influxdb import exceptions
 
+from home_weather_station import SenseHatReadings
+
 dir_path = os.path.dirname(os.path.abspath(__file__))
 log_path = os.path.join(dir_path, 'logs/weather_system_errors.log')
 logging.basicConfig(filename=log_path,
@@ -33,31 +35,33 @@ logging.basicConfig(filename=log_path,
 class InfluxDBProxy:
     CONF_FILE = os.path.join(dir_path, 'conf/influx_connect.json')
 
-    def __init__(self):
-        connect = self.read_config_json()
+    @staticmethod
+    def read_config_json() -> dict:
+        try:
+            with open(InfluxDBProxy.CONF_FILE, "r") as connect_file:
+                return json.load(connect_file)
+        except (FileNotFoundError, IOError):
+            logging.critical(f"{InfluxDBProxy.CONF_FILE} not found")
+
+    def __init__(self, host='localhost', port=8086):
+        connect = InfluxDBProxy.read_config_json()
+        self._host = host
+        self._port = port
         self._username = connect["user"]
         self._password = connect["password"]
         self._database = connect["database"]
-        self._client = InfluxDBClient(host='localhost',
-                                      port=8086,
+        self._client = InfluxDBClient(host=self._host,
+                                      port=self._port,
                                       username=self._username,
                                       password=self._password,
                                       database=self._database)
 
-    def read_config_json(self):
-        try:
-            with open(self.CONF_FILE, "r") as connect_file:
-                return json.load(connect_file)
-        except (FileNotFoundError, IOError):
-            logging.critical(f"{self.CONF_FILE} not found")
-
-    def write_sh_readings(self, temperature, humidity, pressure):
+    def write_sh_readings(self, sense_hat_readings: SenseHatReadings) -> None:
         """
         following this tutorial as basis: https://www.circuits.dk/datalogger-example-using-sense-hat-influxdb-grafana/
         heavily modified
         writing readings
         """
-
         try:
             # write measurements of DB
             write_data = [
@@ -66,41 +70,33 @@ class InfluxDBProxy:
                     "tags": {"user": self._username},
                     "time": datetime.datetime.utcnow().isoformat(),
                     "fields": {
-                        "temperature": temperature,
-                        "humidity": humidity,
-                        "pressure": pressure
+                        "temperature": sense_hat_readings.temperature,
+                        "humidity": sense_hat_readings.humidity,
+                        "pressure": sense_hat_readings.pressure
                     }
                 }
             ]
 
             result = self._client.write_points(write_data)
 
-            # log if unsuccessful even
+            # log if unsuccessful event
             if not result:
                 logging.error(f"SenseHat to influxDatabase write : {result}")
         except exceptions.InfluxDBClientError as err:
             logging.critical(f"Error writing to the database{err}")
 
-    def get_last_logged(self):
+    def get_last_logged(self) -> float:
         """
-        :return: read latest logged temperature data in db
+        :return: average temperature for the last 15 minutes
         """
         try:
-            # todo sql of last mean
+            """ 
+             influxDb python adapter doesn't support parameterised queries. there is an open issue about that, no ETA 
+            """
 
-            # SELECT mean("temperature")
-            # FROM "SenseHatReadings"
-            # WHERE ("user" = 'pi')
-            # AND $timeFilter
-            # GROUP BY time(15m) fill(0)
-
-            # last_temp = self._client.query('SELECT LAST("temperature") FROM SenseHatReadings')
-            # old version
-            # last_temp = self._client.query('SELECT LAST(mean("temperature")) FROM "SenseHatReadings" GROUP BY time(15m)')
-            # Working statment:
-            last_temp = self._client.query('SELECT MEAN(temperature) FROM SenseHatReadings where time >= now() - 15m and time <= now()')
+            last_temp = self._client.query('SELECT MEAN(temperature) FROM SenseHatReadings where time >= now() - 15m')
             last_temp = list(last_temp.get_points())[0]
-            return last_temp["last"]
+            return last_temp["mean"]
         except exceptions.InfluxDBClientError as err:
             logging.critical(f"Error reading from the database{err}")
             return 0
