@@ -5,10 +5,10 @@ from crontab import CronTab
 
 
 def reset() -> int:
-    prompt = "reset all cron jobs? "
+    prompt = "reset all cron jobs? (yes/no): "
     while True:
         try:
-            return {"true": True, "false": False}[input(prompt).lower()]
+            return {"yes": True, "no": False}[input(prompt).lower()]
         except KeyError:
             print("Invalid input please enter True or False!")
 

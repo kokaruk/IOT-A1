@@ -15,79 +15,41 @@
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
 """
 
-import configparser
 import logging
-import os
-import sys
 import time
-from dataclasses import dataclass
 from datetime import datetime
+from config_constants import SenseHatReadings, UPPER_TEMPERATURE_THRESHOLD, LOWER_TEMPERATURE_THRESHOLD, \
+    RUNS_PER_MINUTE, FREQUENCY, MESSENGER_FLAG_PATH
 
-import influx_db_proxy as db
-import push_message as pm
+from influx_db_proxy import InfluxDBProxy
+from push_message import PushMessage
 import sense_hat_read as sh
-
 
 # import bluetooth as bt
 
 
-@dataclass
-class SenseHatReadings:
-    temperature: float
-    humidity: float
-    pressure: float
-
-    @staticmethod
-    def get_reading_as_string(**kwargs) -> str:
-        units_strings = {
-            'temperature': '˚C',
-            'humidity': '%',
-            'pressure': 'mbar'
-        }
-        return f"{round(kwargs['value'], 2)}{units_strings[kwargs['unit']]}"
-
-
-# Globals
-dir_path = os.path.dirname(os.path.abspath(__file__))
-log_path = os.path.join(dir_path, 'logs/weather_system_errors.log')
-
-logging.basicConfig(filename=log_path,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%d-%m %H:%M:%S',
-                    level=logging.INFO)
-# trying both json and ini for config reading
-config = configparser.ConfigParser()
-config_path = os.path.join(dir_path, 'conf/config.ini')
-config.read(config_path)
-
-try:
-    temperature_threshold = int(config['Globals']['temperature_threshold'])
-except KeyError:
-    logging.critical("can't read config file")
-    sys.exit(1)
-last_temp: int
-current_temperature = 0
-current_time: str
-RUNS_PER_MINUTE = 20
-FREQUENCY = 3
+messenger: PushMessage  # holds instance of push bullet messenger
+database_accessor: InfluxDBProxy  # holds instance of database
 sense_hat_readings: SenseHatReadings
 
 
 def main():
     logging.info("Start Main")  # logging start for cron job monitoring
+    global messenger
+    global database_accessor
+    messenger = PushMessage()  # init messenger
+    database_accessor = InfluxDBProxy()  # init database accessor
     for i in range(RUNS_PER_MINUTE):
-        global current_time
-        current_time = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
         populate_readings()
-        populate_db()
-        send_notification()
+        write_readings_to_db()
         # check_for_bluetooth_devices()
         time.sleep(FREQUENCY)
+    send_notification()
 
 
 def populate_readings():
     """
-    # saving the senseHat Readings to a Dict
+    # saving the senseHat Readings to a global variable dict
     """
     global sense_hat_readings
     sense_hat_readings = SenseHatReadings(temperature=sh.get_correct_temperature(),
@@ -95,30 +57,46 @@ def populate_readings():
                                           humidity=sh.get_sense_humid())
 
 
-def populate_db():
-    # instantiating the database accessor
-    database_accessor = db.InfluxDBProxy()
-
-    # read last temperature entry from db
-    global last_temp
-    last_temp = database_accessor.get_last_logged()
-
+def write_readings_to_db():
     global current_temperature
     current_temperature = sense_hat_readings.temperature
     database_accessor.write_sh_readings(sense_hat_readings)
 
 
-def send_notification():
-    # todo fix here to evaluate average 15 minutes
+def send_notification() -> None:
+    """
+    Messaging method. Compare previous flag with current and sends push bullet message
+    :return: None
+    """
+    current_time = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+    current_flag: str
+    try:
+        with open(MESSENGER_FLAG_PATH, "r") as flags:
+            last_flag = flags.read()
+            if last_flag is '':
+                last_flag = 'n'
+    except (FileNotFoundError, IOError):
+        logging.error(f"{MESSENGER_FLAG_PATH} not found")
+        last_flag = 'n'  # assuming normal temperature if failing to read flag file
 
-    if not (last_temp or current_temperature <= temperature_threshold) or not (
-            last_temp or current_temperature > temperature_threshold):
-        # sending the pushMessage to PushBullet
-        message = pm.PushMessage()
-        message.push_message(time=current_time,
-                             temperature=sense_hat_readings.temperature,
-                             humidity=sense_hat_readings.humidity,
-                             pressure=sense_hat_readings.pressure)
+    try:
+        average_temp: int = database_accessor.get_last_average()
+        # set current flag
+        if LOWER_TEMPERATURE_THRESHOLD <= average_temp <= UPPER_TEMPERATURE_THRESHOLD:
+            current_flag = 'n'
+        elif average_temp < LOWER_TEMPERATURE_THRESHOLD:
+            current_flag = 'l'
+        elif average_temp > UPPER_TEMPERATURE_THRESHOLD:
+            current_flag = 'u'
+        # compare flags
+        if current_flag is not 'n' and current_flag is not last_flag:
+            messenger.push_message(sense_hat_readings, time=current_time)
+            logging.info("Sending Message")
+        # write flag
+    except IndexError as err:  # if no data, don't push message
+        logging.error(f"Empty DataSet, most likely no data in the last 15 min {err}")
+    with open(MESSENGER_FLAG_PATH, "w") as flags:
+        flags.write(current_flag)
 
 
 # def check_for_bluetooth_devices():

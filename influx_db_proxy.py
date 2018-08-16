@@ -22,18 +22,11 @@ import os
 from influxdb import InfluxDBClient
 from influxdb import exceptions
 
-from home_weather_station import SenseHatReadings
-
-dir_path = os.path.dirname(os.path.abspath(__file__))
-log_path = os.path.join(dir_path, 'logs/weather_system_errors.log')
-logging.basicConfig(filename=log_path,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%d-%m %H:%M:%S',
-                    level=logging.INFO)
+from config_constants import DIR_PATH, SenseHatReadings
 
 
 class InfluxDBProxy:
-    CONF_FILE = os.path.join(dir_path, 'conf/influx_connect.json')
+    CONF_FILE = os.path.join(DIR_PATH, 'conf/influx_connect.json')
 
     @staticmethod
     def read_config_json() -> dict:
@@ -45,16 +38,12 @@ class InfluxDBProxy:
 
     def __init__(self, host='localhost', port=8086):
         connect = InfluxDBProxy.read_config_json()
-        self._host = host
-        self._port = port
         self._username = connect["user"]
-        self._password = connect["password"]
-        self._database = connect["database"]
-        self._client = InfluxDBClient(host=self._host,
-                                      port=self._port,
-                                      username=self._username,
-                                      password=self._password,
-                                      database=self._database)
+        self._client = InfluxDBClient(host=host,
+                                      port=port,
+                                      username=connect["user"],
+                                      password=connect["password"],
+                                      database=connect["database"])
 
     def write_sh_readings(self, sense_hat_readings: SenseHatReadings) -> None:
         """
@@ -85,7 +74,7 @@ class InfluxDBProxy:
         except exceptions.InfluxDBClientError as err:
             logging.critical(f"Error writing to the database{err}")
 
-    def get_last_logged(self) -> float:
+    def get_last_average(self) -> float:
         """
         :return: average temperature for the last 15 minutes
         """

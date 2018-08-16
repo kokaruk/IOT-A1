@@ -13,63 +13,48 @@
 *
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
 """
-import configparser
-import logging
-import os
-import sys
 
+import logging
 import requests
 
-import home_weather_station as ws
-dir_path = os.path.dirname(os.path.abspath(__file__))
-log_path = os.path.join(dir_path, 'logs/weather_system_errors.log')
-logging.basicConfig(filename=log_path,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%d-%m %H:%M:%S',
-                    level=logging.INFO)
-
-config = configparser.ConfigParser()
-config_path = os.path.join(dir_path, 'conf/config.ini')
-config.read(config_path)
-# send notification when passing this temp threshold
-try:
-    temperature_threshold = int(config['Globals']['temperature_threshold'])
-except KeyError:
-    logging.critical("can't read config file")
-    sys.exit(1)
+from config_constants import UPPER_TEMPERATURE_THRESHOLD, API_KEY_FILE, SenseHatReadings
 
 
 # some code is used from https://simply-python.com/tag/pushbullet/
 
 class PushMessage:
-    FILE_NAME = os.path.join(dir_path, 'conf/API_KEY.txt')
 
-    def read_api_key(self):
+    def __init__(self):
+        self._api_key = PushMessage.read_api_key()
+
+    @staticmethod
+    def read_api_key() -> str:
         """
         read out of the local API Key
         :return: push-bullet api key
         """
         try:
-            with open(self.FILE_NAME, "r") as api_key:
+            with open(API_KEY_FILE, "r") as api_key:
                 return api_key.read()
         except (FileNotFoundError, IOError):
-            logging.critical(f"{self.FILE_NAME} not found")
+            logging.critical(f"{API_KEY_FILE} not found")
 
-    def push_message(self, **kwargs):
+    def push_message(self, sense_hat_readings: SenseHatReadings, time: str) -> None:
         """
         # Send a message to all your registered devices.
-        :param kwargs dictionary
+        :param sense_hat_readings data from sense hat
+        :param time current time
         """
 
         title = 'It is warm enough for a t-shirt' \
-            if kwargs['temperature'] >= temperature_threshold \
+            if sense_hat_readings.temperature >= UPPER_TEMPERATURE_THRESHOLD \
             else 'Please put on a Pullover - its getting colder'
 
-        temperature = ws.SenseHatReadings.get_reading_as_string(value=kwargs['temperature'], unit='temperature')
-        pressure = ws.SenseHatReadings.get_reading_as_string(value=kwargs['pressure'], unit='pressure')
-        humidity = ws.SenseHatReadings.get_reading_as_string(value=kwargs['humidity'], unit='humidity')
+        temperature = sense_hat_readings.get_reading_as_string(value=sense_hat_readings.temperature, unit='temperature')
+        pressure = sense_hat_readings.get_reading_as_string(value=sense_hat_readings.pressure, unit='pressure')
+        humidity = sense_hat_readings.get_reading_as_string(value=sense_hat_readings.humidity, unit='humidity')
 
-        body = f"Current reading at {kwargs['time']}\n" \
+        body = f"Current reading at {time}\n" \
                f"Temperature: {temperature}\n" \
                f"Pressure: {pressure}\n" \
                f"Humidity: {humidity}"
@@ -79,10 +64,10 @@ class PushMessage:
             'title': title,
             'body': body
         }
-        api_key = self.read_api_key()
+
         try:
-            # sending of the message to push-bullet
+            # sending off the message to push-bullet
             requests.post('https://api.pushbullet.com/api/pushes',
-                          data=data, auth=(api_key, ''))
+                          data=data, auth=(self._api_key, ''))
         except requests.exceptions.RequestException as err:
             logging.critical(f" error pushing message {err}")

@@ -179,3 +179,4 @@ main_test.py
 #db connection strings
 conf/influx_connect.json
 logs/
+/conf/m_flags
