@@ -168,8 +168,6 @@ fabric.properties
 
 # Editor-based Rest Client
 .idea/httpRequests
-
-.idea/
 01_ex_handl.py
 
 # api for pushbullet
@@ -179,4 +177,4 @@ main_test.py
 #db connection strings
 conf/influx_connect.json
 logs/
-/conf/m_flags
+/conf/msg_flags.json

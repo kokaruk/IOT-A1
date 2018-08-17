@@ -16,10 +16,14 @@
 """
 
 import logging
+import os
 import time
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
+from json import JSONDecodeError
+
 from config_constants import SenseHatReadings, UPPER_TEMPERATURE_THRESHOLD, LOWER_TEMPERATURE_THRESHOLD, \
-    RUNS_PER_MINUTE, FREQUENCY, MESSENGER_FLAG_PATH
+    RUNS_PER_MINUTE, SLEEP_TIME, MESSENGER_FLAG_PATH, MESSAGE_HOLD, DATE_FORMAT
 
 from influx_db_proxy import InfluxDBProxy
 from push_message import PushMessage
@@ -34,7 +38,6 @@ sense_hat_readings: SenseHatReadings
 
 
 def main():
-    logging.info("Start Main")  # logging start for cron job monitoring
     global messenger
     global database_accessor
     messenger = PushMessage()  # init messenger
@@ -43,11 +46,11 @@ def main():
         populate_readings()
         write_readings_to_db()
         # check_for_bluetooth_devices()
-        time.sleep(FREQUENCY)
+        time.sleep(SLEEP_TIME)
     send_notification()
 
 
-def populate_readings():
+def populate_readings() -> None:
     """
     # saving the senseHat Readings to a global variable dict
     """
@@ -57,7 +60,7 @@ def populate_readings():
                                           humidity=sh.get_sense_humid())
 
 
-def write_readings_to_db():
+def write_readings_to_db() -> None:
     global current_temperature
     current_temperature = sense_hat_readings.temperature
     database_accessor.write_sh_readings(sense_hat_readings)
@@ -68,19 +71,22 @@ def send_notification() -> None:
     Messaging method. Compare previous flag with current and sends push bullet message
     :return: None
     """
-    current_time = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+
+    flags = {}
     current_flag: str
     try:
-        with open(MESSENGER_FLAG_PATH, "r") as flags:
-            last_flag = flags.read()
-            if last_flag is '':
-                last_flag = 'n'
-    except (FileNotFoundError, IOError):
-        logging.error(f"{MESSENGER_FLAG_PATH} not found")
-        last_flag = 'n'  # assuming normal temperature if failing to read flag file
+        if os.path.exists(MESSENGER_FLAG_PATH):
+            with open(MESSENGER_FLAG_PATH, "r") as flags_file:
+                flags = json.load(flags_file)
+    except JSONDecodeError:
+        logging.error(f"error parsing JSON {MESSENGER_FLAG_PATH}")
+    finally:
+        if not flags:
+            flags = {'flag': '',
+                     'time': ''}
 
     try:
-        average_temp: int = database_accessor.get_last_average()
+        average_temp = database_accessor.get_last_average()
         # set current flag
         if LOWER_TEMPERATURE_THRESHOLD <= average_temp <= UPPER_TEMPERATURE_THRESHOLD:
             current_flag = 'n'
@@ -88,15 +94,34 @@ def send_notification() -> None:
             current_flag = 'l'
         elif average_temp > UPPER_TEMPERATURE_THRESHOLD:
             current_flag = 'u'
-        # compare flags
-        if current_flag is not 'n' and current_flag is not last_flag:
-            messenger.push_message(sense_hat_readings, time=current_time)
-            logging.info("Sending Message")
-        # write flag
-    except IndexError as err:  # if no data, don't push message
+
+        if current_flag is not 'n':
+            current_time = datetime.now()
+            current_time_str = current_time.strftime(DATE_FORMAT)
+            if not flags['flag'] or \
+                    current_flag is not flags['flag'] or \
+                    hold_time_expired(flags, current_time):
+                messenger.push_message(sense_hat_readings, time=current_time_str)
+                logging.info("Sending Message")
+                flags = {'flag': current_flag,
+                         'time': current_time_str}
+    except IndexError as err:  # if no data, don't push message (raised by database reader)
         logging.error(f"Empty DataSet, most likely no data in the last 15 min {err}")
-    with open(MESSENGER_FLAG_PATH, "w") as flags:
-        flags.write(current_flag)
+    else:
+        with open(MESSENGER_FLAG_PATH, "w") as flags_write:
+            json.dump(flags, flags_write)
+
+
+def hold_time_expired(flags: dict, current_time: datetime) -> bool:
+    """
+    Method to compute if messaging holding interval has expired, to avoid spamming
+    :param flags: dict of messaging status
+    :param current_time current system time
+    :return: bool value
+    """
+    msg_time = datetime.strptime(flags['time'], DATE_FORMAT)
+    hold_expiry = msg_time + timedelta(hours=MESSAGE_HOLD)
+    return current_time >= hold_expiry
 
 
 # def check_for_bluetooth_devices():

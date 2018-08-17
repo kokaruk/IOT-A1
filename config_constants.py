@@ -16,9 +16,9 @@ import logging
 import sys
 from dataclasses import dataclass
 
-
-# all module constants
-
+# ******************************
+# all modules constants and classes
+# ******************************
 DIR_PATH = os.path.dirname(os.path.abspath(__file__))  # getting current file absolute path, required for cron jobs
 LOG_PATH = os.path.join(DIR_PATH, 'logs/weather_system_errors.log')
 
@@ -34,30 +34,18 @@ config.read(config_path)
 
 # send notification when passing this temp threshold
 try:
-    LOWER_TEMPERATURE_THRESHOLD = int(config['Globals']['lower_temperature_threshold'])
-    UPPER_TEMPERATURE_THRESHOLD = int(config['Globals']['upper_temperature_threshold'])
+    LOWER_TEMPERATURE_THRESHOLD = float(config['Globals']['lower_temperature_threshold'])
+    UPPER_TEMPERATURE_THRESHOLD = float(config['Globals']['upper_temperature_threshold'])
 except KeyError:
     logging.critical("can't read config file")
     sys.exit(1)
-
-# SENSE  HAT MODULE CONSTANTS
-TEMP_FACTOR_COMP = 1.5  # this is a specified temp factor for compensating proximity of HAT sensor to CPU
-
-# PUSH MESSAGE CONSTANTS
-API_KEY_FILE = os.path.join(DIR_PATH, 'conf/API_KEY.txt')
-
-# main module constants
-try:
-    RUNS_PER_MINUTE = int(config['Globals']['runs_per_minute'])
-except KeyError:
-    logging.critical("can't read config file")
-    sys.exit(1)
-FREQUENCY: int = int(60 / RUNS_PER_MINUTE)  # 60 seconds in a minute
-MESSENGER_FLAG_PATH = os.path.join(DIR_PATH, 'conf/m_flags')
 
 
 @dataclass
 class SenseHatReadings:
+    """
+    data class for storing values from sense hat
+    """
     temperature: float
     humidity: float
     pressure: float
@@ -70,3 +58,28 @@ class SenseHatReadings:
             'pressure': 'mbar'
         }
         return f"{round(value, 2)}{units_strings[unit]}"
+
+
+# ******************************
+# SENSE  HAT MODULE CONSTANTS
+# ******************************
+TEMP_FACTOR_COMP = 1.5  # this is a specified temp factor for compensating proximity of HAT sensor to CPU
+
+# ******************************
+# PUSH MESSAGE CONSTANTS
+# ******************************
+API_KEY_FILE = os.path.join(DIR_PATH, 'conf/API_KEY.txt')
+
+# ******************************
+# MAIN MODULE CONSTANTS
+# *******************************
+try:
+    RUNS_PER_MINUTE = int(config['Globals']['runs_per_minute'])
+    MESSAGE_HOLD = float(config['Globals']['message_hold'])
+except KeyError:
+    logging.critical("can't read config file")
+    sys.exit(1)
+SLEEP_TIME: int = int(60 / RUNS_PER_MINUTE)  # 60 seconds in a minute
+MESSENGER_FLAG_PATH = os.path.join(DIR_PATH, 'data/msg_flags.json')
+
+DATE_FORMAT = '%d/%m/%Y %H:%M:%S'

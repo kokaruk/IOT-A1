@@ -63,7 +63,8 @@ class BluetoothConnect:
                         break
                 if device_address is not None:
                     print("Hi {}! Your phone ({}) has the MAC address: {}".format(name, device, device_address))
-                    temperature = ws.SenseHatReadings.get_reading_as_string(value=kwargs['temperature'], unit='temperature')
+                    temperature = ws.SenseHatReadings.get_reading_as_string(value=kwargs['temperature'],
+                                                                            unit='temperature')
 
                     sense = SenseHat()
                     sense.show_message(f"Hi {name} Current Temp is {temperature}", scroll_speed=0.03)
