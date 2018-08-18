@@ -22,26 +22,19 @@ import bluetooth
 import json
 import logging
 import time
-from sense_hat import SenseHat
-import home_weather_station as ws
-dir_path = os.path.dirname(os.path.abspath(__file__))
-log_path = os.path.join(dir_path, 'logs/weather_system_errors.log')
-logging.basicConfig(filename=log_path,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%d-%m %H:%M:%S',
-                    level=logging.INFO)
+
+from config_constants import BLUETOOTH_DEVICES_JSON
 
 
 class BluetoothConnect:
-    FILE_NAME = os.path.join(dir_path, 'conf/bluetooth_devices.json')
 
-    # Main function
-    def parse_known_devices(self):
+    @staticmethod
+    def parse_known_devices() -> dict:
         try:
-            with open(self.FILE_NAME, "r") as known_device_file:
+            with open(BLUETOOTH_DEVICES_JSON, "r") as known_device_file:
                 return json.loads(known_device_file)
         except (FileNotFoundError, IOError):
-            logging.critical(f"{self.FILE_NAME} not found")
+            logging.critical(f"{BLUETOOTH_DEVICES_JSON} not found")
 
     # Search for device based on device's name
     def search_and_display_message(self, **kwargs):

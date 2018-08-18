@@ -28,8 +28,7 @@ from config_constants import SenseHatReadings, UPPER_TEMPERATURE_THRESHOLD, LOWE
 from influx_db_proxy import InfluxDBProxy
 from push_message import PushMessage
 import sense_hat_read as sh
-
-# import bluetooth as bt
+import bluetooth as bt
 
 
 messenger: PushMessage  # holds instance of push bullet messenger

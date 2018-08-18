@@ -71,6 +71,11 @@ TEMP_FACTOR_COMP = 1.5  # this is a specified temp factor for compensating proxi
 API_KEY_FILE = os.path.join(DIR_PATH, 'conf/API_KEY.txt')
 
 # ******************************
+# PUSH MESSAGE CONSTANTS
+# ******************************
+BLUETOOTH_DEVICES_JSON = os.path.join(DIR_PATH, 'conf/bluetooth_devices.json')
+
+# ******************************
 # MAIN MODULE CONSTANTS
 # *******************************
 try:
