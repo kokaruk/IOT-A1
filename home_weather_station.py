@@ -28,10 +28,10 @@ from config_constants import SenseHatReadings, UPPER_TEMPERATURE_THRESHOLD, LOWE
 from influx_db_proxy import InfluxDBProxy
 from push_message import PushMessage
 import sense_hat_read as sh
-import bluetooth as bt
+from bluetooth_mdl import search_and_display_message
 
 
-messenger: PushMessage  # holds instance of push bullet messenger
+messenger: PushMessage  # holds instancew of push bullet messenger
 database_accessor: InfluxDBProxy  # holds instance of database
 sense_hat_readings: SenseHatReadings
 
@@ -44,7 +44,7 @@ def main():
     for i in range(RUNS_PER_MINUTE):
         populate_readings()
         write_readings_to_db()
-        # check_for_bluetooth_devices()
+        search_and_display_message(temperature=sense_hat_readings.temperature)
         time.sleep(SLEEP_TIME)
     send_notification()
 
@@ -121,11 +121,6 @@ def hold_time_expired(flags: dict, current_time: datetime) -> bool:
     msg_time = datetime.strptime(flags['time'], DATE_FORMAT)
     hold_expiry = msg_time + timedelta(hours=MESSAGE_HOLD)
     return current_time >= hold_expiry
-
-
-# def check_for_bluetooth_devices():
-#   bluetooth_instance = bt.BluetoothConnect
-#   bluetooth_instance.search_and_display_message(sense_hat_readings.temperature)
 
 
 # calling main and starting the program

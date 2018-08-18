@@ -16,50 +16,43 @@
 *
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
 """
-import os
-
-import bluetooth
 import json
 import logging
-import time
+import os
+from json import JSONDecodeError
+
+import bluetooth
 
 from config_constants import BLUETOOTH_DEVICES_JSON
+from sense_hat_read import sense
 
 
-class BluetoothConnect:
-
-    @staticmethod
-    def parse_known_devices() -> dict:
-        try:
-            with open(BLUETOOTH_DEVICES_JSON, "r") as known_device_file:
-                return json.loads(known_device_file)
-        except (FileNotFoundError, IOError):
-            logging.critical(f"{BLUETOOTH_DEVICES_JSON} not found")
+def parse_known_devices() -> dict:
+    try:
+        with open(BLUETOOTH_DEVICES_JSON, "r") as known_device_file:
+            return json.loads(known_device_file)
+    except (FileNotFoundError, IOError, JSONDecodeError):
+        logging.critical(f"{BLUETOOTH_DEVICES_JSON} failed to read")
 
     # Search for device based on device's name
-    def search_and_display_message(self, **kwargs):
-        devices = self.parse_known_devices()
 
-        for devices["devices"].items in devices:
-            name = devices["devices"]["name"]
-            device = devices["devices"]["name"]
+
+def search_and_display_message(self, temperature):
+    if os.path.exists(BLUETOOTH_DEVICES_JSON):
+        known_devices = parse_known_devices()
+        for known_devices["devices"].items in known_devices:
+            owner_name = known_devices["devices"]["owner_name"]
+            device_name = known_devices["devices"]["device_name"]
             while True:
                 device_address = None
-                dt = time.strftime("%a, %d %b %y %H:%M:%S", time.localtime())
-                print("\nCurrently: {}".format(dt))
-                time.sleep(3)  # Sleep three seconds
+
                 nearby_devices = bluetooth.discover_devices()
 
                 for mac_address in nearby_devices:
-                    if device == bluetooth.lookup_name(mac_address, timeout=5):
+                    if device_name == bluetooth.lookup_name(mac_address, timeout=5):
                         device_address = mac_address
                         break
                 if device_address is not None:
-                    print("Hi {}! Your phone ({}) has the MAC address: {}".format(name, device, device_address))
-                    temperature = ws.SenseHatReadings.get_reading_as_string(value=kwargs['temperature'],
-                                                                            unit='temperature')
-
-                    sense = SenseHat()
-                    sense.show_message(f"Hi {name} Current Temp is {temperature}", scroll_speed=0.03)
+                    sense.show_message(f"Hi {owner_name} Current Temp is {temperature}", scroll_speed=0.03)
                 else:
                     print("Could not find target device nearby...")
