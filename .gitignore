@@ -178,3 +178,4 @@ main_test.py
 conf/influx_connect.json
 logs/
 /conf/msg_flags.json
+/conf/bluetooth_devices.json

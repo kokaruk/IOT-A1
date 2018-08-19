@@ -19,40 +19,48 @@
 import json
 import logging
 import os
+import time
 from json import JSONDecodeError
 
 import bluetooth
 
-from config_constants import BLUETOOTH_DEVICES_JSON
+from config_constants import BLUETOOTH_DEVICES_JSON, BLUETOOTH_STATUS_JSON, BLUETOOTH_GREETING_DELAY
 from sense_hat_read import sense
 
 
 def parse_known_devices() -> dict:
+    """
+    parsing known bluetooth devices list
+    """
     try:
         with open(BLUETOOTH_DEVICES_JSON, "r") as known_device_file:
-            return json.loads(known_device_file)
+            return json.load(known_device_file)
     except (FileNotFoundError, IOError, JSONDecodeError):
         logging.critical(f"{BLUETOOTH_DEVICES_JSON} failed to read")
 
-    # Search for device based on device's name
 
-
-def search_and_display_message(self, temperature):
+def search_and_display_message(temperature):
     if os.path.exists(BLUETOOTH_DEVICES_JSON):
         known_devices = parse_known_devices()
-        for known_devices["devices"].items in known_devices:
-            owner_name = known_devices["devices"]["owner_name"]
-            device_name = known_devices["devices"]["device_name"]
-            while True:
-                device_address = None
-
-                nearby_devices = bluetooth.discover_devices()
-
-                for mac_address in nearby_devices:
-                    if device_name == bluetooth.lookup_name(mac_address, timeout=5):
-                        device_address = mac_address
-                        break
-                if device_address is not None:
-                    sense.show_message(f"Hi {owner_name} Current Temp is {temperature}", scroll_speed=0.03)
-                else:
-                    print("Could not find target device nearby...")
+        for device in known_devices["devices"]:
+            is_home = bluetooth.lookup_name(device['mac'], timeout=15)
+            bt_stat = {}
+            try:
+                if os.path.exists(BLUETOOTH_STATUS_JSON):
+                    with open(BLUETOOTH_STATUS_JSON) as bluetooth_status_file:
+                        bt_stat = json.load(bluetooth_status_file)
+            except JSONDecodeError:
+                logging.error(f"error parsing JSON {BLUETOOTH_STATUS_JSON}")
+            finally:
+                if not bt_stat:
+                    bt_stat = {'sent': False}
+            if is_home is not None and not bool(bt_stat['sent']):  # if device is home and greeting wasn't sent
+                time.sleep(BLUETOOTH_GREETING_DELAY)
+                sense.show_message(f"Hi {device['owner_name']} Current Temp is {temperature}ºC",
+                                   scroll_speed=0.1, text_colour=(65, 96, 68), back_colour=(255, 149, 139))
+                sense.clear()
+                bt_stat['sent'] = True
+            elif is_home is None:
+                bt_stat['sent'] = False
+            with open(BLUETOOTH_STATUS_JSON, "w") as status_write:
+                json.dump(bt_stat, status_write)

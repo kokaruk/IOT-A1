@@ -1,12 +1,5 @@
 {
   "devices": [
-    {
-      "owner_name": "Patrick",
-      "device_name": "Patrick Iphone"
-    },
-    {
-      "owner_name": "Dimz",
-      "device_name": "Dimz iPhone"
-    }
+    {"owner_name":"Dimz","mac":"68:EF:43:37:BE:9C"}
   ]
 }

@@ -71,9 +71,15 @@ TEMP_FACTOR_COMP = 1.5  # this is a specified temp factor for compensating proxi
 API_KEY_FILE = os.path.join(DIR_PATH, 'conf/API_KEY.txt')
 
 # ******************************
-# PUSH MESSAGE CONSTANTS
+# BT MESSAGE CONSTANTS
 # ******************************
 BLUETOOTH_DEVICES_JSON = os.path.join(DIR_PATH, 'conf/bluetooth_devices.json')
+BLUETOOTH_STATUS_JSON = os.path.join(DIR_PATH, 'data/bluetooth_status.json')
+try:
+    BLUETOOTH_GREETING_DELAY = float(config['Globals']['greeting_delay'])
+except KeyError:
+    logging.critical("can't read config file")
+    sys.exit(1)
 
 # ******************************
 # MAIN MODULE CONSTANTS

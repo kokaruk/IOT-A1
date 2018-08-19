@@ -30,13 +30,13 @@ from push_message import PushMessage
 import sense_hat_read as sh
 from bluetooth_mdl import search_and_display_message
 
-
-messenger: PushMessage  # holds instancew of push bullet messenger
+messenger: PushMessage  # holds instance of push bullet messenger
 database_accessor: InfluxDBProxy  # holds instance of database
 sense_hat_readings: SenseHatReadings
 
 
 def main():
+    logging.info("start execution")
     global messenger
     global database_accessor
     messenger = PushMessage()  # init messenger
@@ -44,9 +44,10 @@ def main():
     for i in range(RUNS_PER_MINUTE):
         populate_readings()
         write_readings_to_db()
-        search_and_display_message(temperature=sense_hat_readings.temperature)
         time.sleep(SLEEP_TIME)
     send_notification()
+    search_and_display_message(temperature=sense_hat_readings.temperature)
+    search_and_display_message(temperature=12)
 
 
 def populate_readings() -> None:
@@ -60,8 +61,6 @@ def populate_readings() -> None:
 
 
 def write_readings_to_db() -> None:
-    global current_temperature
-    current_temperature = sense_hat_readings.temperature
     database_accessor.write_sh_readings(sense_hat_readings)
 
 
