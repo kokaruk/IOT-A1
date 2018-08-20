@@ -47,7 +47,6 @@ def main():
         time.sleep(SLEEP_TIME)
     send_notification()
     search_and_display_message(temperature=sense_hat_readings.temperature)
-    search_and_display_message(temperature=12)
 
 
 def populate_readings() -> None:
