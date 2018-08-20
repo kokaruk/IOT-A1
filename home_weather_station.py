@@ -46,7 +46,7 @@ def main():
         write_readings_to_db()
         time.sleep(SLEEP_TIME)
     send_notification()
-    search_and_display_message(temperature=sense_hat_readings.temperature)
+    search_and_display_message(temperature=database_accessor.get_last_average())
 
 
 def populate_readings() -> None:

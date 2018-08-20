@@ -57,7 +57,7 @@ def search_and_display_message(temperature):
             if is_home is not None and not bool(bt_stat['sent']):  # if device is home and greeting wasn't sent
                 logging.info("Bluetooth greetings")
                 time.sleep(BLUETOOTH_GREETING_DELAY)
-                sense.show_message(f"Hi {device['owner_name']} Current Temp is {temperature} C",
+                sense.show_message(f"Hi {device['owner_name']} Current Temp is {round(temperature,2)} C",
                                    scroll_speed=0.1, text_colour=(65, 96, 68), back_colour=(255, 149, 139))
                 sense.clear()
                 bt_stat['sent'] = True
