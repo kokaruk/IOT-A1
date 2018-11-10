@@ -13,20 +13,28 @@
 import configparser
 import os
 import logging
+from logging.handlers import RotatingFileHandler
 import sys
 from dataclasses import dataclass
+
 
 # ******************************
 # all modules constants and classes
 # ******************************
 DIR_PATH = os.path.dirname(os.path.abspath(__file__))  # getting current file absolute path, required for cron jobs
-LOG_PATH = os.path.join(DIR_PATH, 'logs/weather_system_errors.log')
+LOG_PATH = os.path.join(DIR_PATH, 'logs')
 
-# init logging
-logging.basicConfig(filename=LOG_PATH,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%d-%m %H:%M:%S',
-                    level=logging.INFO)
+
+if not os.path.exists(LOG_PATH):
+    os.mkdir(LOG_PATH)
+file_handler = RotatingFileHandler(f'{LOG_PATH}/weather_system_errors.log', maxBytes=10240,
+                                   backupCount=10)
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(logging.Formatter(
+    '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+
+logger = logging.getLogger("grafana")
+logger.addHandler(file_handler)
 
 config = configparser.ConfigParser()  # reading config from ini file
 config_path = os.path.join(DIR_PATH, 'conf/config.ini')
@@ -37,7 +45,7 @@ try:
     LOWER_TEMPERATURE_THRESHOLD = float(config['Globals']['lower_temperature_threshold'])
     UPPER_TEMPERATURE_THRESHOLD = float(config['Globals']['upper_temperature_threshold'])
 except KeyError:
-    logging.critical("can't read config file")
+    logger.critical("can't read config file")
     sys.exit(1)
 
 
@@ -78,7 +86,7 @@ BLUETOOTH_STATUS_JSON = os.path.join(DIR_PATH, 'data/bluetooth_status.json')
 try:
     BLUETOOTH_GREETING_DELAY = float(config['Globals']['greeting_delay'])
 except KeyError:
-    logging.critical("can't read config file")
+    logger.critical("can't read config file")
     sys.exit(1)
 
 # ******************************
@@ -88,7 +96,7 @@ try:
     RUNS_PER_MINUTE = int(config['Globals']['runs_per_minute'])
     MESSAGE_HOLD = float(config['Globals']['message_hold'])
 except KeyError:
-    logging.critical("can't read config file")
+    logger.critical("can't read config file")
     sys.exit(1)
 SLEEP_TIME: int = int(60 / RUNS_PER_MINUTE)  # 60 seconds in a minute
 MESSENGER_FLAG_PATH = os.path.join(DIR_PATH, 'data/msg_flags.json')

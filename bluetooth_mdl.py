@@ -17,14 +17,13 @@
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
 """
 import json
-import logging
 import os
 import time
 from json import JSONDecodeError
 
 import bluetooth
 
-from config_constants import BLUETOOTH_DEVICES_JSON, BLUETOOTH_STATUS_JSON, BLUETOOTH_GREETING_DELAY
+from config import BLUETOOTH_DEVICES_JSON, BLUETOOTH_STATUS_JSON, BLUETOOTH_GREETING_DELAY, logger
 from sense_hat_read import sense
 
 
@@ -36,7 +35,7 @@ def parse_known_devices() -> dict:
         with open(BLUETOOTH_DEVICES_JSON, "r") as known_device_file:
             return json.load(known_device_file)
     except (FileNotFoundError, IOError, JSONDecodeError):
-        logging.critical(f"{BLUETOOTH_DEVICES_JSON} failed to read")
+        logger.critical(f"{BLUETOOTH_DEVICES_JSON} failed to read")
 
 
 def search_and_display_message(temperature):
@@ -50,12 +49,12 @@ def search_and_display_message(temperature):
                     with open(BLUETOOTH_STATUS_JSON) as bluetooth_status_file:
                         bt_stat = json.load(bluetooth_status_file)
             except JSONDecodeError:
-                logging.error(f"error parsing JSON {BLUETOOTH_STATUS_JSON}")
+                logger.error(f"error parsing JSON {BLUETOOTH_STATUS_JSON}")
             finally:
                 if not bt_stat:
                     bt_stat = {'sent': False}
             if is_home is not None and not bool(bt_stat['sent']):  # if device is home and greeting wasn't sent
-                logging.info("Bluetooth greetings")
+                logger.info("Bluetooth greetings")
                 time.sleep(BLUETOOTH_GREETING_DELAY)
                 sense.show_message(f"Hi {device['owner_name']} Current Temp is {round(temperature,2)} C",
                                    scroll_speed=0.1, text_colour=(65, 96, 68), back_colour=(255, 149, 139))

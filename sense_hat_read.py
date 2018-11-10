@@ -18,7 +18,7 @@ import os
 from statistics import mean
 from sense_hat import SenseHat
 
-from config_constants import TEMP_FACTOR_COMP
+from config import TEMP_FACTOR_COMP
 
 sense = SenseHat()
 

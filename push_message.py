@@ -14,10 +14,9 @@
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
 """
 
-import logging
 import requests
 
-from config_constants import UPPER_TEMPERATURE_THRESHOLD, API_KEY_FILE, SenseHatReadings
+from config import UPPER_TEMPERATURE_THRESHOLD, API_KEY_FILE, SenseHatReadings, logger
 
 
 # some code is used from https://simply-python.com/tag/pushbullet/
@@ -37,7 +36,7 @@ class PushMessage:
             with open(API_KEY_FILE, "r") as api_key:
                 return api_key.read()
         except (FileNotFoundError, IOError):
-            logging.critical(f"{API_KEY_FILE} not found")
+            logger.critical(f"{API_KEY_FILE} not found")
 
     def push_message(self, sense_hat_readings: SenseHatReadings, time: str) -> None:
         """
@@ -70,4 +69,4 @@ class PushMessage:
             requests.post('https://api.pushbullet.com/api/pushes',
                           data=data, auth=(self._api_key, ''))
         except requests.exceptions.RequestException as err:
-            logging.critical(f" error pushing message {err}")
+            logger.critical(f" error pushing message {err}")

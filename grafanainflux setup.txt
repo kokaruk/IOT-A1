@@ -1,0 +1,12 @@
+After installing and starting services
+
+1. fix proxy tables in  /etc/iptables.firewall.rules
+
+sudo iptables-restore < /etc/iptables.firewall.rules
+
+sudo iptables -L
+
+2. Enable the systemd service so that Grafana starts at boot
+sudo systemctl enable grafana-server.service
+
+Apparently, all the settings remained

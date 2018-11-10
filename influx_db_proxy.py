@@ -16,13 +16,12 @@
 
 import datetime
 import json
-import logging
 import os
 
 from influxdb import InfluxDBClient
 from influxdb import exceptions
 
-from config_constants import DIR_PATH, SenseHatReadings
+from config import DIR_PATH, SenseHatReadings, logger
 
 
 class InfluxDBProxy:
@@ -34,7 +33,7 @@ class InfluxDBProxy:
             with open(InfluxDBProxy.CONF_FILE, "r") as connect_file:
                 return json.load(connect_file)
         except (FileNotFoundError, IOError):
-            logging.critical(f"{InfluxDBProxy.CONF_FILE} not found")
+            logger.critical(f"{InfluxDBProxy.CONF_FILE} not found")
 
     def __init__(self, host='localhost', port=8086):
         connect = InfluxDBProxy.read_config_json()
@@ -70,9 +69,9 @@ class InfluxDBProxy:
 
             # log if unsuccessful event
             if not result:
-                logging.error(f"SenseHat to influxDatabase write : {result}")
+                logger.error(f"SenseHat to influxDatabase write : {result}")
         except exceptions.InfluxDBClientError as err:
-            logging.critical(f"Error writing to the database{err}")
+            logger.critical(f"Error writing to the database{err}")
 
     def get_last_average(self) -> float:
         """
@@ -87,5 +86,5 @@ class InfluxDBProxy:
             last_temp = list(last_temp.get_points())[0]
             return last_temp["mean"]
         except exceptions.InfluxDBClientError as err:
-            logging.critical(f"Error reading from the database{err}")
+            logger.critical(f"Error reading from the database{err}")
             return 0

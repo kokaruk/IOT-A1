@@ -15,15 +15,14 @@
 * Copyright notice - All copyrights belong to Dzmitry Kakaruk, Patrick Jacob - August 2018
 """
 
-import logging
 import os
 import time
 import json
 from datetime import datetime, timedelta
 from json import JSONDecodeError
 
-from config_constants import SenseHatReadings, UPPER_TEMPERATURE_THRESHOLD, LOWER_TEMPERATURE_THRESHOLD, \
-    RUNS_PER_MINUTE, SLEEP_TIME, MESSENGER_FLAG_PATH, MESSAGE_HOLD, DATE_FORMAT
+from config import SenseHatReadings, UPPER_TEMPERATURE_THRESHOLD, LOWER_TEMPERATURE_THRESHOLD, \
+    RUNS_PER_MINUTE, SLEEP_TIME, MESSENGER_FLAG_PATH, MESSAGE_HOLD, DATE_FORMAT, logger
 
 from influx_db_proxy import InfluxDBProxy
 from push_message import PushMessage
@@ -36,7 +35,7 @@ sense_hat_readings: SenseHatReadings
 
 
 def main():
-    logging.info("start execution")
+    logger.info("start execution")
     global messenger
     global database_accessor
     messenger = PushMessage()  # init messenger
@@ -76,7 +75,7 @@ def send_notification() -> None:
             with open(MESSENGER_FLAG_PATH, "r") as flags_file:
                 flags = json.load(flags_file)
     except JSONDecodeError:
-        logging.error(f"error parsing JSON {MESSENGER_FLAG_PATH}")
+        logger.error(f"error parsing JSON {MESSENGER_FLAG_PATH}")
     finally:
         if not flags:
             flags = {'flag': '',
@@ -99,11 +98,11 @@ def send_notification() -> None:
                     current_flag is not flags['flag'] or \
                     hold_time_expired(flags, current_time):
                 messenger.push_message(sense_hat_readings, time=current_time_str)
-                logging.info("Sending Message")
+                logger.info("Sending Message")
                 flags = {'flag': current_flag,
                          'time': current_time_str}
     except IndexError as err:  # if no data, don't push message (raised by database reader)
-        logging.error(f"Empty DataSet, most likely no data in the last 15 min {err}")
+        logger.error(f"Empty DataSet, most likely no data in the last 15 min {err}")
     else:
         with open(MESSENGER_FLAG_PATH, "w") as flags_write:
             json.dump(flags, flags_write)
