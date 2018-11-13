@@ -40,12 +40,12 @@ def main():
     global database_accessor
     messenger = PushMessage()  # init messenger
     database_accessor = InfluxDBProxy()  # init database accessor
+    search_and_display_message(temperature=database_accessor.get_last_average())
     for i in range(RUNS_PER_MINUTE):
         populate_readings()
         write_readings_to_db()
         time.sleep(SLEEP_TIME)
     send_notification()
-    search_and_display_message(temperature=database_accessor.get_last_average())
 
 
 def populate_readings() -> None:

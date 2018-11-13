@@ -85,6 +85,6 @@ class InfluxDBProxy:
             last_temp = self._client.query('SELECT MEAN(temperature) FROM SenseHatReadings where time >= now() - 15m')
             last_temp = list(last_temp.get_points())[0]
             return last_temp["mean"]
-        except exceptions.InfluxDBClientError as err:
+        except (IndexError, exceptions.InfluxDBClientError) as err:
             logger.critical(f"Error reading from the database{err}")
             return 0

@@ -21,6 +21,8 @@ from sense_hat import SenseHat
 from config import TEMP_FACTOR_COMP
 
 sense = SenseHat()
+sense.low_light = True
+sense.set_rotation(180)
 
 
 def _get_sense_temperature_from_humidity() -> float:
