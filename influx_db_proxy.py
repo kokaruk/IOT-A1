@@ -58,9 +58,9 @@ class InfluxDBProxy:
                     "tags": {"user": self._username},
                     "time": datetime.datetime.utcnow().isoformat(),
                     "fields": {
-                        "temperature": sense_hat_readings.temperature,
-                        "humidity": sense_hat_readings.humidity,
-                        "pressure": sense_hat_readings.pressure
+                        "temperature": float(sense_hat_readings.temperature),
+                        "humidity": float(sense_hat_readings.humidity),
+                        "pressure": float(sense_hat_readings.pressure)
                     }
                 }
             ]
@@ -71,7 +71,7 @@ class InfluxDBProxy:
             if not result:
                 logger.error(f"SenseHat to influxDatabase write : {result}")
         except exceptions.InfluxDBClientError as err:
-            logger.critical(f"Error writing to the database{err}")
+            logger.error(f"Error writing to the database: {err}")
 
     def get_last_average(self) -> float:
         """
