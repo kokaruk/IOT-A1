@@ -63,7 +63,7 @@ def sensehat_greeting(temperature: float, device: dict) -> None:
     """
     process to send greetings on sense hat from se[arate sthread
     """
-    logger.debug("Bluetooth greetings")
+    logger.log("Bluetooth greetings")
 
     time.sleep(BLUETOOTH_GREETING_DELAY)
 
